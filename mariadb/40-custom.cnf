@@ -1,0 +1,9 @@
+[mariadb]
+plugin_load_add = sql_errlog
+sql_error_log_filename=/var/log/mysql/error.log
+
+log_error=/var/log/mysql/error.log
+log_warnings=9
+
+general_log=1
+general_log_file=/var/log/mysql/general.log

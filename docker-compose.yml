@@ -1,7 +1,7 @@
 services:
   go-app:
     build:
-      context: ./
+      context: ./go_app
     container_name: go-app
     expose:
       - "80" # Expose http port

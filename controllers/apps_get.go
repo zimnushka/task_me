@@ -1,12 +1,13 @@
-package apps
+package appControllers
 
 import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
+	appModels "github.com/zimnushka/task_me_go/models"
 )
 
-func getApps() []App {
+func GetApps() []appModels.App {
 	db, err := sql.Open("mysql", "root:43WYOH5l8W1I@tcp(192.168.17.9:3306)/taskMe")
 	if err != nil {
 		panic(err.Error())
@@ -19,10 +20,10 @@ func getApps() []App {
 		panic(err.Error())
 	}
 	appsLng := 0
-	apps := make([]App, appsLng)
+	apps := make([]appModels.App, appsLng)
 
 	for results.Next() {
-		var app App
+		var app appModels.App
 		err := results.Scan(&app.Id, &app.Name, &app.Password, &app.Email)
 		if err != nil {
 			panic(err.Error())

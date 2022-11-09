@@ -11,10 +11,29 @@ import (
 )
 
 func AuthControllerInit() models.Controller {
-	return models.Controller{Url: "/auth", HandleFunc: authController}
+	controller := models.Controller{Url: "/auth"}
+	controller.RegisterController("/login", loginController)
+	controller.RegisterController("/registration", registrationController)
+	return controller
 }
 
-func authController(w http.ResponseWriter, r *http.Request) {
+func registrationController(w http.ResponseWriter, r *http.Request) {
+	// GET, POST, PUT, DELETE
+
+	if r.Method == "POST" {
+		var user models.User
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		repositories.AddUser(user)
+		s, _ := json.Marshal(user)
+		fmt.Fprintf(w, string(s))
+	}
+
+}
+func loginController(w http.ResponseWriter, r *http.Request) {
 	// GET, POST, PUT, DELETE
 
 	if r.Method == "POST" {

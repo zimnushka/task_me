@@ -5,10 +5,9 @@ import (
 )
 
 type Controller struct {
-	Url        string
-	HandleFunc func(http.ResponseWriter, *http.Request)
+	Url string
 }
 
-func (c *Controller) RegisterController() {
-	http.HandleFunc(c.Url, c.HandleFunc)
+func (c *Controller) RegisterController(subUrl string, handlerFunc func(http.ResponseWriter, *http.Request)) {
+	http.HandleFunc(c.Url+subUrl, handlerFunc)
 }

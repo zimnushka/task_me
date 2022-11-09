@@ -10,7 +10,13 @@ import (
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
 
-func UserController(w http.ResponseWriter, r *http.Request) {
+func UserControllerInit() models.Controller {
+	controller := models.Controller{Url: "/user"}
+	controller.RegisterController("", userController)
+	return controller
+}
+
+func userController(w http.ResponseWriter, r *http.Request) {
 	// GET, POST, PUT, DELETE
 	switch r.Method {
 	case "GET":

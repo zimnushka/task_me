@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/users", controllers.UserController)
+	authController := controllers.AuthControllerInit()
+	authController.RegisterController()
+
 	http.ListenAndServe(":8080", nil)
 }

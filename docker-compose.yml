@@ -6,8 +6,6 @@ services:
     expose:
       - "80" # Expose http port
     restart: always
-    volumes:
-      - ./www:/usr/share/nginx/html/
     ports:
       - "80:8080"
 

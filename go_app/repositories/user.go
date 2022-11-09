@@ -7,6 +7,24 @@ import (
 	"github.com/zimnushka/task_me_go/go_app/models"
 )
 
+func GetUser(query string) *models.User {
+	db := getDB()
+	defer db.Close()
+	results := queryDB(db, query)
+	defer results.Close()
+
+	for results.Next() {
+		var user models.User
+		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email)
+		if err != nil {
+			panic(err.Error())
+		}
+		return &user
+	}
+
+	return nil
+}
+
 func GetUsers() []models.User {
 	db := getDB()
 	defer db.Close()

@@ -12,6 +12,7 @@ import (
 )
 
 type ProjectController struct {
+	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
 	models.Controller
 }
@@ -24,13 +25,19 @@ func (controller ProjectController) Init() models.Controller {
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := controller.authUseCase.CheckToken(r.Header.Get("Authorization"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
 		if err == nil {
-			project, err := controller.projectUseCase.GetProjectById(id)
+			project, err := controller.projectUseCase.GetProjectById(id, *user.Id)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -39,7 +46,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 
 		} else {
 			err = nil
-			projects, err := controller.projectUseCase.GetAllProjects()
+			projects, err := controller.projectUseCase.GetAllProjects(*user.Id)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -59,7 +66,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		newproject, err := controller.projectUseCase.AddProject(project)
+		newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -78,7 +85,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		_, err = controller.projectUseCase.UpdateProject(project)
+		_, err = controller.projectUseCase.UpdateProject(project, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -92,7 +99,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = controller.projectUseCase.DeleteProject(id)
+		err = controller.projectUseCase.DeleteProject(id, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

@@ -11,14 +11,14 @@ type ProjectUseCase struct {
 	projectRepository repositories.ProjectRepository
 }
 
-func (useCase *ProjectUseCase) GetProjectById(id int) (*models.Project, error) {
+func (useCase *ProjectUseCase) GetProjectById(id, userId int) (*models.Project, error) {
 	return useCase.projectRepository.GetProjectFromId(id)
 }
 
-func (useCase *ProjectUseCase) GetAllProjects() ([]models.Project, error) {
+func (useCase *ProjectUseCase) GetAllProjects(userId int) ([]models.Project, error) {
 	return useCase.projectRepository.GetProjects()
 }
-func (useCase *ProjectUseCase) AddProject(project models.Project) (*models.Project, error) {
+func (useCase *ProjectUseCase) AddProject(project models.Project, userId int) (*models.Project, error) {
 	project.Id = nil
 	userWithEmail, _ := useCase.projectRepository.GetProjectFromTitle(project.Title)
 	if userWithEmail != nil {
@@ -30,7 +30,7 @@ func (useCase *ProjectUseCase) AddProject(project models.Project) (*models.Proje
 	}
 	return useCase.projectRepository.GetProjectFromTitle(project.Title)
 }
-func (useCase *ProjectUseCase) UpdateProject(project models.Project) (*models.Project, error) {
+func (useCase *ProjectUseCase) UpdateProject(project models.Project, userId int) (*models.Project, error) {
 	err := useCase.projectRepository.UpdateProject(project)
 	if err != nil {
 		return nil, err
@@ -38,6 +38,6 @@ func (useCase *ProjectUseCase) UpdateProject(project models.Project) (*models.Pr
 	return useCase.projectRepository.GetProjectFromId(*project.Id)
 }
 
-func (useCase *ProjectUseCase) DeleteProject(id int) error {
+func (useCase *ProjectUseCase) DeleteProject(id, userId int) error {
 	return useCase.projectRepository.DeleteProject(id)
 }

@@ -6,7 +6,7 @@ type Project struct {
 	Color int
 }
 
-type UserProject struct {
+type ProjectUser struct {
 	UserId    int
 	ProjectId int
 }

@@ -35,11 +35,7 @@ func (controller AuthController) registrationHandler(w http.ResponseWriter, r *h
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		s, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		fmt.Fprintf(w, string(s))
+		fmt.Fprintf(w, response)
 	}
 
 }

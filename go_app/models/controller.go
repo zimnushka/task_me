@@ -5,7 +5,8 @@ import (
 )
 
 type Controller struct {
-	Url string
+	Url        string
+	IsNeedAuth bool
 }
 
 func (c *Controller) RegisterController(subUrl string, handlerFunc func(http.ResponseWriter, *http.Request)) {

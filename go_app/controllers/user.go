@@ -25,17 +25,32 @@ func (controller UserController) Init() models.Controller {
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		users, err := controller.userUseCase.GetAllUsers()
+		var jsonData []byte
+		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		id, err := strconv.Atoi(idString)
+		if err == nil {
+			user, err := controller.userUseCase.GetUserById(id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			jsonData, err = json.Marshal(user)
+
+		} else {
+			err = nil
+			users, err := controller.userUseCase.GetAllUsers()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			jsonData, err = json.Marshal(users)
+
+		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		s, err := json.Marshal(users)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, string(s))
+		fmt.Fprintf(w, string(jsonData))
 	case "POST":
 		var user models.User
 		err := json.NewDecoder(r.Body).Decode(&user)

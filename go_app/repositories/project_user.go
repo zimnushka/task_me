@@ -17,7 +17,7 @@ func (repository ProjectUserRepository) GetProjectsByUser(id int) ([]models.Proj
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT * FROM UsersProjects INNER JOIN projects ON UsersProjects.project_id=projects.id AND UsersProjects.user_id=%d", id)
+	query := fmt.Sprintf("SELECT projects.id, projects.title,projects.color FROM UsersProjects INNER JOIN projects ON UsersProjects.project_id=projects.id AND UsersProjects.user_id=%d", id)
 	results, err := db.Query(query)
 	defer results.Close()
 	if err != nil {
@@ -46,7 +46,7 @@ func (repository ProjectUserRepository) GetUsersByProject(id int) ([]models.User
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT * FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
+	query := fmt.Sprintf("SELECT user.id,user.name,user.email FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
 	results, err := db.Query(query)
 	defer results.Close()
 	if err != nil {
@@ -58,7 +58,7 @@ func (repository ProjectUserRepository) GetUsersByProject(id int) ([]models.User
 
 	for results.Next() {
 		var item models.User
-		err := results.Scan(&item.Id, &item.Name, &item.Email, &item.Password)
+		err := results.Scan(&item.Id, &item.Name, &item.Email)
 		if err != nil {
 			return nil, err
 		}

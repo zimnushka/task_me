@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+const HeaderAuth = "Authorization"
+
 type Controller struct {
 	Url        string
 	IsNeedAuth bool

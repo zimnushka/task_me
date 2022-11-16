@@ -13,6 +13,7 @@ import (
 
 type UserController struct {
 	userUseCase usecases.UserUseCase
+	authUseCase usecases.AuthUseCase
 	models.Controller
 }
 
@@ -23,6 +24,11 @@ func (controller UserController) Init() models.Controller {
 }
 
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	switch r.Method {
 	case "GET":
 		var jsonData []byte

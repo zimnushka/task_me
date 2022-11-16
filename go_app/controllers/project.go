@@ -25,7 +25,7 @@ func (controller ProjectController) Init() models.Controller {
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := controller.authUseCase.CheckToken(r.Header.Get("Authorization"))
+	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -85,7 +85,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		_, err = controller.projectUseCase.UpdateProject(project, *user.Id)
+		err = controller.projectUseCase.UpdateProject(project, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

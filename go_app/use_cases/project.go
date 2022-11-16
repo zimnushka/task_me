@@ -1,14 +1,13 @@
 package usecases
 
 import (
-	"errors"
-
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
 
 type ProjectUseCase struct {
-	projectRepository repositories.ProjectRepository
+	projectRepository     repositories.ProjectRepository
+	projectUserRepository repositories.ProjectUserRepository
 }
 
 func (useCase *ProjectUseCase) GetProjectById(id, userId int) (*models.Project, error) {
@@ -20,15 +19,9 @@ func (useCase *ProjectUseCase) GetAllProjects(userId int) ([]models.Project, err
 }
 func (useCase *ProjectUseCase) AddProject(project models.Project, userId int) (*models.Project, error) {
 	project.Id = nil
-	userWithEmail, _ := useCase.projectRepository.GetProjectFromTitle(project.Title)
-	if userWithEmail != nil {
-		return nil, errors.New("User with this email was created")
-	}
-	err := useCase.projectRepository.AddProject(project)
-	if err != nil {
-		return nil, err
-	}
-	return useCase.projectRepository.GetProjectFromTitle(project.Title)
+
+	return useCase.projectRepository.AddProject(project)
+
 }
 func (useCase *ProjectUseCase) UpdateProject(project models.Project, userId int) (*models.Project, error) {
 	err := useCase.projectRepository.UpdateProject(project)

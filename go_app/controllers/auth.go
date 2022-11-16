@@ -58,12 +58,8 @@ func (controller AuthController) loginHandler(w http.ResponseWriter, r *http.Req
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		s, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, string(s))
+
+		fmt.Fprintf(w, response)
 	}
 
 }

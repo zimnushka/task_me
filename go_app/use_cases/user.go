@@ -24,11 +24,8 @@ func (useCase *UserUseCase) AddUser(user models.User) (*models.User, error) {
 	if userWithEmail != nil {
 		return nil, errors.New("User with this email was created")
 	}
-	err := useCase.userRepository.AddUser(user)
-	if err != nil {
-		return nil, err
-	}
-	return useCase.userRepository.GetUserFromEmail(user.Email)
+
+	return useCase.userRepository.AddUser(user)
 }
 func (useCase *UserUseCase) UpdateUser(user models.User) (*models.User, error) {
 	err := useCase.userRepository.UpdateUser(user)

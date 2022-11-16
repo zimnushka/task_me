@@ -90,17 +90,20 @@ func (userRepository UserRepository) GetUsers() ([]models.User, error) {
 	return users, nil
 }
 
-func (userRepository UserRepository) AddUser(user models.User) error {
+func (userRepository UserRepository) AddUser(user models.User) (*models.User, error) {
 	db, err := userRepository.taskMeDB.GetDB()
 	defer db.Close()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	query := fmt.Sprintf("INSERT INTO users (name, password, email) VALUES ('%s','%s','%s')", user.Name, user.Password, user.Email)
+	query := fmt.Sprintf("INSERT INTO users (name, password, email) VALUES ('%s','%s','%s') RETURNING id", user.Name, user.Password, user.Email)
 	results, err := db.Query(query)
 	defer results.Close()
 
-	return err
+	for results.Next() {
+		err = results.Scan(&user.Id)
+	}
+	return &user, err
 }
 
 func (userRepository UserRepository) UpdateUser(user models.User) error {

@@ -19,10 +19,10 @@ func (repository ProjectUserRepository) GetProjectsByUser(id int) ([]models.Proj
 	}
 	query := fmt.Sprintf("SELECT projects.id, projects.title,projects.color FROM UsersProjects INNER JOIN projects ON UsersProjects.project_id=projects.id AND UsersProjects.user_id=%d", id)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	itemsLng := 0
 	items := make([]models.Project, itemsLng)
@@ -46,12 +46,12 @@ func (repository ProjectUserRepository) GetUsersByProject(id int) ([]models.User
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT user.id,user.name,user.email FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
+	query := fmt.Sprintf("SELECT users.id, users.name, users.email FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	itemsLng := 0
 	items := make([]models.User, itemsLng)
@@ -77,7 +77,9 @@ func (repository ProjectUserRepository) AddLink(projectId, userId int) error {
 	}
 	query := fmt.Sprintf("INSERT INTO UsersProjects (user_id, project_id) VALUES ('%d','%d')", userId, projectId)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 }
@@ -91,7 +93,9 @@ func (repository ProjectUserRepository) DeleteLink(projectId, userId int) error 
 
 	query := fmt.Sprintf("DELETE FROM UsersProjects WHERE user_id = %d AND project_id = %d", userId, projectId)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 }
@@ -105,7 +109,9 @@ func (repository ProjectUserRepository) DeleteAllLinkByProject(projectId int) er
 
 	query := fmt.Sprintf("DELETE FROM UsersProjects WHERE project_id = %d", projectId)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 
@@ -120,7 +126,9 @@ func (repository ProjectUserRepository) DeleteAllLinkByUser(userId int) error {
 
 	query := fmt.Sprintf("DELETE FROM UsersProjects WHERE user_id = %d", userId)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 

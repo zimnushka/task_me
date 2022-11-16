@@ -20,10 +20,10 @@ func (userRepository UserRepository) GetUserFromEmail(email string) (*models.Use
 	}
 	query := fmt.Sprintf("SELECT * FROM users WHERE email = '%s' LIMIT 1", email)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	for results.Next() {
 		var user models.User
@@ -45,10 +45,10 @@ func (userRepository UserRepository) GetUserFromId(id int) (*models.User, error)
 	}
 	query := fmt.Sprintf("SELECT * FROM users WHERE id = '%d' LIMIT 1", id)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	for results.Next() {
 		var user models.User
@@ -69,10 +69,10 @@ func (userRepository UserRepository) GetUsers() ([]models.User, error) {
 		return nil, err
 	}
 	results, err := db.Query("SELECT * FROM users")
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	usersLng := 0
 	users := make([]models.User, usersLng)
@@ -98,6 +98,9 @@ func (userRepository UserRepository) AddUser(user models.User) (*models.User, er
 	}
 	query := fmt.Sprintf("INSERT INTO users (name, password, email) VALUES ('%s','%s','%s') RETURNING id", user.Name, user.Password, user.Email)
 	results, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
 	defer results.Close()
 
 	for results.Next() {
@@ -114,7 +117,9 @@ func (userRepository UserRepository) UpdateUser(user models.User) error {
 	}
 	query := fmt.Sprintf("UPDATE users SET name = '%s', password = '%s', email = '%s' WHERE id = %d", user.Name, user.Password, user.Email, *user.Id)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 }
@@ -128,10 +133,10 @@ func (userRepository UserRepository) DeleteUser(id int) error {
 
 	query := fmt.Sprintf("DELETE FROM users WHERE id = %d", id)
 	results, err := db.Query(query)
-	defer results.Close()
-	if err != nil {
-		return err
+	if err == nil {
+		defer results.Close()
 	}
-	return nil
+
+	return err
 
 }

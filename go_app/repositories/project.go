@@ -20,10 +20,10 @@ func (projectRepository ProjectRepository) GetProjectFromId(id int) (*models.Pro
 	}
 	query := fmt.Sprintf("SELECT * FROM projects WHERE id = '%d' LIMIT 1", id)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	for results.Next() {
 		var project models.Project
@@ -44,10 +44,10 @@ func (projectRepository ProjectRepository) GetProjects() ([]models.Project, erro
 		return nil, err
 	}
 	results, err := db.Query("SELECT * FROM projects")
-	defer results.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer results.Close()
 
 	itemsLng := 0
 	items := make([]models.Project, itemsLng)
@@ -73,6 +73,9 @@ func (projectRepository ProjectRepository) AddProject(project models.Project) (*
 	}
 	query := fmt.Sprintf("INSERT INTO projects (title, color) VALUES ('%s','%d') RETURNING id", project.Title, project.Color)
 	results, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
 	defer results.Close()
 
 	for results.Next() {
@@ -89,7 +92,9 @@ func (projectRepository ProjectRepository) UpdateProject(project models.Project)
 	}
 	query := fmt.Sprintf("UPDATE projects SET title = '%s', color = '%d' WHERE id = %d", project.Title, project.Color, project.Id)
 	results, err := db.Query(query)
-	defer results.Close()
+	if err == nil {
+		defer results.Close()
+	}
 
 	return err
 }
@@ -103,10 +108,10 @@ func (projectRepository ProjectRepository) DeleteProject(id int) error {
 
 	query := fmt.Sprintf("DELETE FROM projects WHERE id = %d", id)
 	results, err := db.Query(query)
-	defer results.Close()
 	if err != nil {
 		return err
 	}
+	defer results.Close()
 	return nil
 
 }

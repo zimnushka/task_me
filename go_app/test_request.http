@@ -18,6 +18,18 @@
 # GET http://localhost:8080/user
 # Authorization: NzlkYmViODE2NTgyLTE=
 
-# GET PROJECTS
-GET http://localhost:8080/project
+# # GET PROJECTS
+# GET http://localhost:8080/project
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# TASK CREATION
+POST http://localhost:8080/task
+content-type: application/json
 Authorization: NzlkYmViODE2NTgyLTE=
+
+{
+    "title": "first task",
+    "description": "description",
+    "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
+    "projectId":2
+}

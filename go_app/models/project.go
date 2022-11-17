@@ -1,9 +1,9 @@
 package models
 
 type Project struct {
-	Id    *int
-	Title string
-	Color int
+	Id    *int   `json:"id"`
+	Title string `json:"title"`
+	Color int    `json:"color"`
 }
 
 type ProjectUser struct {

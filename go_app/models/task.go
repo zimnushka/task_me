@@ -3,11 +3,11 @@ package models
 import "time"
 
 type Task struct {
-	Id          *int
-	ProjectId   int
-	Title       string
-	Description string
-	Time        time.Time
+	Id          *int      `json:"id"`
+	ProjectId   int       `json:"projectId"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Time        time.Time `json:"dueDate"`
 }
 
 type TaskUser struct {

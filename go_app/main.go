@@ -10,5 +10,6 @@ func main() {
 	controllers.AuthController{}.Init()
 	controllers.UserController{}.Init()
 	controllers.ProjectController{}.Init()
+	controllers.TaskController{}.Init()
 	http.ListenAndServe(":8080", nil)
 }

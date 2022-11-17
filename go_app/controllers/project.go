@@ -19,7 +19,6 @@ type ProjectController struct {
 
 func (controller ProjectController) Init() models.Controller {
 	controller.Url = "/project"
-	controller.IsNeedAuth = true
 	controller.RegisterController("", controller.projectHandler)
 	controller.RegisterController("/members/", controller.projectMemberHandler)
 	return controller.Controller

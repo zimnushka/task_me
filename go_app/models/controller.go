@@ -7,8 +7,7 @@ import (
 const HeaderAuth = "Authorization"
 
 type Controller struct {
-	Url        string
-	IsNeedAuth bool
+	Url string
 }
 
 func (c *Controller) RegisterController(subUrl string, handlerFunc func(http.ResponseWriter, *http.Request)) {

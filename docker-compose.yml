@@ -1,4 +1,23 @@
 services:
+  # flutter-app:
+  #   build:
+  #     context: ./flutter_app
+  #   container_name: flutter-app
+  #   restart: always
+  #   ports:
+  #      - "80:8080"
+  nginx:
+    container_name: nginx
+    restart: always
+    build:
+      context: ./nginx
+    volumes:
+      - ./www:/usr/share/nginx/html/
+    expose:
+      - "80" # Expose http port
+    ports:
+      - "80:80"
+
   go-app:
     build:
       context: ./go_app
@@ -7,7 +26,7 @@ services:
       - "80" # Expose http port
     restart: always
     ports:
-      - "80:8080"
+      - "8080:8080"
 
   mariadb:
     build: './mariadb'

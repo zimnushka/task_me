@@ -24,7 +24,7 @@ func (controller UserController) Init() models.Controller {
 }
 
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -32,8 +32,17 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
-		id, err := strconv.Atoi(idString)
+		path := strings.TrimPrefix(r.URL.Path, controller.Url)
+		if path == "me" {
+			user, err := controller.userUseCase.GetUserById(*user.Id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			jsonData, err = json.Marshal(user)
+			return
+		}
+		id, err := strconv.Atoi(path)
 		if err == nil {
 			user, err := controller.userUseCase.GetUserById(id)
 			if err != nil {

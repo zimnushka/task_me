@@ -11,5 +11,7 @@ func main() {
 	controllers.UserController{}.Init()
 	controllers.ProjectController{}.Init()
 	controllers.TaskController{}.Init()
+	controllers.ProjectMemberController{}.Init()
+	controllers.TaskMemberController{}.Init()
 	http.ListenAndServe(":8080", nil)
 }

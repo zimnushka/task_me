@@ -26,7 +26,7 @@ func (controller UserController) Init() models.Controller {
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	switch r.Method {
@@ -36,51 +36,52 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 		if path == "me" {
 			user, err := controller.userUseCase.GetUserById(*user.Id)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			jsonData, err = json.Marshal(user)
-			return
-		}
-		id, err := strconv.Atoi(path)
-		if err == nil {
-			user, err := controller.userUseCase.GetUserById(id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
 			jsonData, err = json.Marshal(user)
 
 		} else {
-			err = nil
-			users, err := controller.userUseCase.GetAllUsers()
+			id, err := strconv.Atoi(path)
+			if err == nil {
+				user, err := controller.userUseCase.GetUserById(id)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusNotFound)
+					return
+				}
+				jsonData, err = json.Marshal(user)
+
+			} else {
+				err = nil
+				users, err := controller.userUseCase.GetAllUsers()
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusNotFound)
+					return
+				}
+				jsonData, err = json.Marshal(users)
+
+			}
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			jsonData, err = json.Marshal(users)
-
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
 		}
 		fmt.Fprintf(w, string(jsonData))
 	case "POST":
 		var user models.User
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		newUser, err := controller.userUseCase.AddUser(user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		s, err := json.Marshal(newUser)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		fmt.Fprintf(w, string(s))
@@ -89,12 +90,12 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		_, err = controller.userUseCase.UpdateUser(user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -103,12 +104,12 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		err = controller.userUseCase.DeleteUser(id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 

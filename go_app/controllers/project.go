@@ -18,16 +18,15 @@ type ProjectController struct {
 }
 
 func (controller ProjectController) Init() models.Controller {
-	controller.Url = "/project"
+	controller.Url = "/project/"
 	controller.RegisterController("", controller.projectHandler)
-	controller.RegisterController("/members/", controller.projectMemberHandler)
 	return controller.Controller
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -39,7 +38,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 		if err == nil {
 			project, err := controller.projectUseCase.GetProjectById(id, *user.Id)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
 			jsonData, err = json.Marshal(project)
@@ -48,14 +47,14 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			err = nil
 			projects, err := controller.projectUseCase.GetAllProjects(*user.Id)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
 			jsonData, err = json.Marshal(projects)
 
 		}
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		fmt.Fprintf(w, string(jsonData))
@@ -63,17 +62,17 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 		var project models.Project
 		err := json.NewDecoder(r.Body).Decode(&project)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		s, err := json.Marshal(newproject)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		fmt.Fprintf(w, string(s))
@@ -82,12 +81,12 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 
 		err := json.NewDecoder(r.Body).Decode(&project)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		err = controller.projectUseCase.UpdateProject(project, *user.Id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
@@ -96,75 +95,15 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		err = controller.projectUseCase.DeleteProject(id, *user.Id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		fmt.Fprintf(w, "")
-	}
-
-}
-
-func (controller ProjectController) projectMemberHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	idString := strings.Split(r.URL.Path, "/")
-	projectId, err := strconv.Atoi(idString[len(idString)-1])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	switch r.Method {
-	case "GET":
-		items, err := controller.projectUseCase.GetProjectUsers(projectId, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		data, err := json.Marshal(items)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, string(data))
-	case "PUT":
-		var project models.ProjectUser
-		project.ProjectId = projectId
-		project.UserId, err = strconv.Atoi(r.URL.Query().Get("userId"))
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err = controller.projectUseCase.AddMemberToProject(project.ProjectId, project.UserId, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, "")
-	case "DELETE":
-		var project models.ProjectUser
-		project.ProjectId = projectId
-		project.UserId, err = strconv.Atoi(r.URL.Query().Get("userId"))
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		err = controller.projectUseCase.DeleteMemberFromProject(project.ProjectId, project.UserId, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 		fmt.Fprintf(w, "")
 	}
 

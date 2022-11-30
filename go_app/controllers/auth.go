@@ -27,12 +27,12 @@ func (controller AuthController) registrationHandler(w http.ResponseWriter, r *h
 		var user models.User
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		response, err := controller.authUseCase.Register(user)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		fmt.Fprintf(w, response)
@@ -49,13 +49,13 @@ func (controller AuthController) loginHandler(w http.ResponseWriter, r *http.Req
 		var params loginParams
 		err := json.NewDecoder(r.Body).Decode(&params)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
 		response, err := controller.authUseCase.Login(params.Email, params.Password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 

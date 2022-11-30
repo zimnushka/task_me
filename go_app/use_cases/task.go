@@ -10,15 +10,16 @@ import (
 type TaskUseCase struct {
 	taskRepository     repositories.TaskRepository
 	taskUserRepository repositories.TaskUserRepository
+	projectUseCase     ProjectUseCase
 }
 
-func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, error) {
-	access, err := useCase.CheckUserHaveTask(id, userId)
+func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, error) {
+	access, err := useCase.projectUseCase.CheckUserHaveProject(projectId, userId)
 	if err != nil {
 		return nil, err
 	}
 	if access {
-		return useCase.taskRepository.GetTaskFromId(id)
+		return useCase.taskRepository.GetTasksFromProject(projectId)
 	}
 	return nil, errors.New("Forbiden")
 }

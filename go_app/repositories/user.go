@@ -27,7 +27,7 @@ func (userRepository UserRepository) GetUserFromEmail(email string) (*models.Use
 
 	for results.Next() {
 		var user models.User
-		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email)
+		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email, &user.Color, &user.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +52,7 @@ func (userRepository UserRepository) GetUserFromId(id int) (*models.User, error)
 
 	for results.Next() {
 		var user models.User
-		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email)
+		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email, &user.Color, &user.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (userRepository UserRepository) GetUsers() ([]models.User, error) {
 
 	for results.Next() {
 		var user models.User
-		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email)
+		err := results.Scan(&user.Id, &user.Name, &user.Password, &user.Email, &user.Color, &user.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ func (userRepository UserRepository) AddUser(user models.User) (*models.User, er
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("INSERT INTO users (name, password, email) VALUES ('%s','%s','%s') RETURNING id", user.Name, user.Password, user.Email)
+	query := fmt.Sprintf("INSERT INTO users (name, password, email, color, cost) VALUES ('%s','%s','%s','%d','%d') RETURNING id", user.Name, user.Password, user.Email, user.Color, user.Cost)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func (userRepository UserRepository) UpdateUser(user models.User) error {
 	if err != nil {
 		return err
 	}
-	query := fmt.Sprintf("UPDATE users SET name = '%s', password = '%s', email = '%s' WHERE id = %d", user.Name, user.Password, user.Email, *user.Id)
+	query := fmt.Sprintf("UPDATE users SET name = '%s', password = '%s', email = '%s', color = '%d', cost = '%d' WHERE id = %d", user.Name, user.Password, user.Email, user.Color, user.Cost, *user.Id)
 	results, err := db.Query(query)
 	if err == nil {
 		defer results.Close()

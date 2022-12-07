@@ -29,7 +29,7 @@ func (repository ProjectUserRepository) GetProjectsByUser(id int) ([]models.Proj
 
 	for results.Next() {
 		var item models.Project
-		err := results.Scan(&item.Id, &item.Title, &item.Color)
+		err := results.Scan(&item.Id, &item.Title, &item.Color, &item.OwnerId)
 		if err != nil {
 			return nil, err
 		}

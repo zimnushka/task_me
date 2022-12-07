@@ -14,9 +14,6 @@ type Task struct {
 	Description string `json:"description"`
 	Status      int    `json:"statusId"`
 	Time        string `json:"dueDate"`
-}
-
-type TaskUser struct {
-	UserId int
-	TaskId int
+	UserId      *int   `json:"userId"`
+	Cost        int    `json:"cost"`
 }

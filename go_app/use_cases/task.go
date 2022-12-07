@@ -8,9 +8,9 @@ import (
 )
 
 type TaskUseCase struct {
-	taskRepository     repositories.TaskRepository
-	taskUserRepository repositories.TaskUserRepository
-	projectUseCase     ProjectUseCase
+	taskRepository repositories.TaskRepository
+
+	projectUseCase ProjectUseCase
 }
 
 func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, error) {
@@ -25,51 +25,24 @@ func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.
 }
 
 func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, error) {
-	return useCase.taskUserRepository.GetTasksByUser(userId)
+	return useCase.taskRepository.GetTasksFromUser(userId)
 }
 
-func (useCase *TaskUseCase) GetTaskUsers(projectId, userId int) ([]models.User, error) {
-	access, err := useCase.CheckUserHaveTask(projectId, userId)
-	if err != nil {
-		return nil, err
-	}
-	if access {
-		return useCase.taskUserRepository.GetUsersByTask(projectId)
-	}
-	return nil, errors.New("Forbiden")
-}
-
-func (useCase *TaskUseCase) AddTask(project models.Task, userId int) (*models.Task, error) {
-	if project.Title == "" {
+func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task, error) {
+	if task.Title == "" {
 		return nil, errors.New("Title is empty")
 	}
-	project.Id = nil
-	newTask, err := useCase.taskRepository.AddTask(project)
-	if err != nil {
-		return nil, err
-	}
-	err = useCase.taskUserRepository.AddLink(*newTask.Id, userId)
-	return newTask, err
+	task.Id = nil
+	return useCase.taskRepository.AddTask(task)
 }
 
-func (useCase *TaskUseCase) AddMemberToTask(projectId, userId, userRequestId int) error {
-	access, err := useCase.CheckUserHaveTask(projectId, userRequestId)
+func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) error {
+	access, err := useCase.CheckUserHaveTask(*item.Id, userId)
 	if err != nil {
 		return err
 	}
 	if access {
-		return useCase.taskUserRepository.AddLink(projectId, userId)
-	}
-	return errors.New("Forbiden")
-}
-
-func (useCase *TaskUseCase) UpdateTask(project models.Task, userId int) error {
-	access, err := useCase.CheckUserHaveTask(*project.Id, userId)
-	if err != nil {
-		return err
-	}
-	if access {
-		return useCase.taskRepository.UpdateTask(project)
+		return useCase.taskRepository.UpdateTask(item)
 	}
 	return errors.New("Forbiden")
 }
@@ -85,26 +58,16 @@ func (useCase *TaskUseCase) DeleteTask(id, userId int) error {
 	return errors.New("Forbiden")
 }
 
-func (useCase *TaskUseCase) DeleteMemberFromTask(projectId, userId, userRequestId int) error {
-	access, err := useCase.CheckUserHaveTask(projectId, userId)
-	if err != nil {
-		return err
-	}
-	if access {
-		return useCase.taskUserRepository.DeleteLink(projectId, userId)
-	}
-	return errors.New("Forbiden")
-}
-
-func (useCase *TaskUseCase) CheckUserHaveTask(projectId, userId int) (bool, error) {
-	projects, err := useCase.taskUserRepository.GetTasksByUser(userId)
+func (useCase *TaskUseCase) CheckUserHaveTask(taskId, userId int) (bool, error) {
+	item, err := useCase.taskRepository.GetTaskFromId(taskId)
+	projects, err := useCase.projectUseCase.GetAllProjects(userId)
 	if err != nil {
 		return false, err
 	}
 	var id int
 	for _, project := range projects {
 		id = *project.Id
-		if id == projectId {
+		if id == *&item.ProjectId {
 			return true, nil
 		}
 	}

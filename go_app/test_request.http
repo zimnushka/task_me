@@ -37,7 +37,7 @@
 # Authorization: NzlkYmViODE2NTgyLTE=
 
 # # TASK CREATION
-# POST  http://localhost:8080/task
+# POST  http://localhost:8080/task/
 # Authorization: NzlkYmViODE2NTgyLTE=
 # content-type: application/json
 
@@ -46,19 +46,27 @@
 #     "description": "description",
 #     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
 #     "projectId":2,
-#     "statusId":0
+#     "statusId":0,
+#     "userId":1,
+#     "cost":0
 # }
 
-# # # TASK EDIT
+# # TASK EDIT
 # PUT  http://localhost:8080/task/
 # Authorization: NzlkYmViODE2NTgyLTE=
 # content-type: application/json
 
 # {
-#     "id": 2, 
-#     "title": "first task",
+#     "id":55,
+#     "title": "first",
 #     "description": "description",
 #     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
 #     "projectId":2,
-#     "statusId":0
+#     "statusId":0,
+#     "userId":null,
+#     "cost":0
 # }
+
+# DELETE TASKS
+# DELETE http://localhost:8080/task/48
+# Authorization: NzlkYmViODE2NTgyLTE=

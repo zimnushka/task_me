@@ -17,7 +17,7 @@ func (repository ProjectUserRepository) GetProjectsByUser(id int) ([]models.Proj
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT projects.id, projects.title,projects.color FROM UsersProjects INNER JOIN projects ON UsersProjects.project_id=projects.id AND UsersProjects.user_id=%d", id)
+	query := fmt.Sprintf("SELECT projects.id, projects.title, projects.color, projects.owner_id FROM UsersProjects INNER JOIN projects ON UsersProjects.project_id=projects.id AND UsersProjects.user_id=%d", id)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err

@@ -129,7 +129,11 @@ func (taskRepository TaskRepository) AddTask(task models.Task) (*models.Task, er
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("INSERT INTO tasks (title,description, project_id, due_date, status_id, user_id, cost) VALUES ('%s','%s','%d','%s','%d','%d','%d') RETURNING id", task.Title, task.Description, task.ProjectId, task.Time, task.Status, *task.UserId, task.Cost)
+	userIdLabel := "NULL"
+	if task.UserId != nil {
+		userIdLabel = fmt.Sprint("'", *task.UserId, "'")
+	}
+	query := fmt.Sprint("INSERT INTO tasks (title, description, project_id, due_date, status_id, user_id, cost) VALUES ('", task.Title, "','", task.Description, "','", task.ProjectId, "','", task.Time, "','", task.Status, "',", userIdLabel, ",'", task.Cost, "') RETURNING id")
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -148,7 +152,11 @@ func (taskRepository TaskRepository) UpdateTask(task models.Task) error {
 	if err != nil {
 		return err
 	}
-	query := fmt.Sprintf("UPDATE tasks SET title = '%s', description = '%s', project_id = '%d', due_date = '%s', status_id = '%d', user_id = '%d', cost = '%d' WHERE id = %d", task.Title, task.Description, task.ProjectId, task.Time, task.Status, *task.UserId, task.Cost, *task.Id)
+	userIdLabel := "NULL"
+	if task.UserId != nil {
+		userIdLabel = fmt.Sprint("'", *task.UserId, "'")
+	}
+	query := fmt.Sprintf("UPDATE tasks SET title = '%s', description = '%s', project_id = '%d', due_date = '%s', status_id = '%d', user_id = %s, cost = '%d' WHERE id = %d", task.Title, task.Description, task.ProjectId, task.Time, task.Status, userIdLabel, task.Cost, *task.Id)
 	results, err := db.Query(query)
 	if err == nil {
 		defer results.Close()

@@ -43,7 +43,7 @@ func (useCase *ProjectUseCase) AddProject(project models.Project, userId int) (*
 		return nil, errors.New("Title is empty")
 	}
 	project.Id = nil
-	newProject, err := useCase.projectRepository.AddProject(project)
+	newProject, err := useCase.projectRepository.AddProject(project, userId)
 	if err != nil {
 		return nil, err
 	}

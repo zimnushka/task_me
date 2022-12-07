@@ -17,7 +17,7 @@ func (repository TaskUserRepository) GetTasksByUser(id int) ([]models.Task, erro
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT tasks.id, tasks.title, tasks.description, tasks.due_date, tasks.project_id FROM UsersTasks INNER JOIN tasks ON UsersTasks.task_id=tasks.id AND UsersTasks.user_id=%d", id)
+	query := fmt.Sprintf("SELECT tasks.id, tasks.title, tasks.description, tasks.due_date, tasks.project_id, tasks.status_id FROM UsersTasks INNER JOIN tasks ON UsersTasks.task_id=tasks.id AND UsersTasks.user_id=%d", id)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (repository TaskUserRepository) GetTasksByUser(id int) ([]models.Task, erro
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +46,7 @@ func (repository TaskUserRepository) GetUsersByTask(id int) ([]models.User, erro
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT users.id, users.name, users.email FROM UsersTasks INNER JOIN users ON UsersTasks.user_id=users.id AND UsersTasks.task_id=%d", id)
+	query := fmt.Sprintf("SELECT users.id, users.name, users.email, users.color, users.cost FROM UsersTasks INNER JOIN users ON UsersTasks.user_id=users.id AND UsersTasks.task_id=%d", id)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (repository TaskUserRepository) GetUsersByTask(id int) ([]models.User, erro
 
 	for results.Next() {
 		var item models.User
-		err := results.Scan(&item.Id, &item.Name, &item.Email)
+		err := results.Scan(&item.Id, &item.Name, &item.Email, &item.Color, &item.Cost)
 		if err != nil {
 			return nil, err
 		}

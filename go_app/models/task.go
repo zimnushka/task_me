@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 const (
 	StatusOpen       = 0
 	StatusInProgress = 1
@@ -10,12 +8,12 @@ const (
 )
 
 type Task struct {
-	Id          *int      `json:"id"`
-	ProjectId   int       `json:"projectId"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Status      int       `json:"StatusId"`
-	Time        time.Time `json:"dueDate"`
+	Id          *int   `json:"id"`
+	ProjectId   int    `json:"projectId"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      int    `json:"statusId"`
+	Time        string `json:"dueDate"`
 }
 
 type TaskUser struct {

@@ -46,7 +46,7 @@ func (repository ProjectUserRepository) GetUsersByProject(id int) ([]models.User
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT users.id, users.name, users.email FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
+	query := fmt.Sprintf("SELECT users.id, users.name, users.email, users.color, users.cost FROM UsersProjects INNER JOIN users ON UsersProjects.user_id=users.id AND UsersProjects.project_id=%d", id)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (repository ProjectUserRepository) GetUsersByProject(id int) ([]models.User
 
 	for results.Next() {
 		var item models.User
-		err := results.Scan(&item.Id, &item.Name, &item.Email)
+		err := results.Scan(&item.Id, &item.Name, &item.Email, &item.Color, &item.Cost)
 		if err != nil {
 			return nil, err
 		}

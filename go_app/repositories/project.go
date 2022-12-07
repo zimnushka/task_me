@@ -27,7 +27,7 @@ func (projectRepository ProjectRepository) GetProjectFromId(id int) (*models.Pro
 
 	for results.Next() {
 		var project models.Project
-		err := results.Scan(&project.Id, &project.Title, &project.Color)
+		err := results.Scan(&project.Id, &project.Title, &project.Color, &project.OwnerId)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func (projectRepository ProjectRepository) GetProjects() ([]models.Project, erro
 
 	for results.Next() {
 		var item models.Project
-		err := results.Scan(&item.Id, &item.Title, &item.Color)
+		err := results.Scan(&item.Id, &item.Title, &item.Color, &item.OwnerId)
 		if err != nil {
 			return nil, err
 		}
@@ -65,13 +65,13 @@ func (projectRepository ProjectRepository) GetProjects() ([]models.Project, erro
 	return items, nil
 }
 
-func (projectRepository ProjectRepository) AddProject(project models.Project) (*models.Project, error) {
+func (projectRepository ProjectRepository) AddProject(project models.Project, userId int) (*models.Project, error) {
 	db, err := projectRepository.taskMeDB.GetDB()
 	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("INSERT INTO projects (title, color) VALUES ('%s','%d') RETURNING id", project.Title, project.Color)
+	query := fmt.Sprintf("INSERT INTO projects (title, color, owner_id) VALUES ('%s','%d','%d') RETURNING id", project.Title, project.Color, userId)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err

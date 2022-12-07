@@ -28,6 +28,11 @@ func (useCase *UserUseCase) AddUser(user models.User) (*models.User, error) {
 	return useCase.userRepository.AddUser(user)
 }
 func (useCase *UserUseCase) UpdateUser(user models.User) (*models.User, error) {
+	if user.Password == "" {
+		userWithPass, _ := useCase.userRepository.GetUserFromId(*user.Id)
+		user.Password = *&userWithPass.Password
+	}
+
 	err := useCase.userRepository.UpdateUser(user)
 	if err != nil {
 		return nil, err

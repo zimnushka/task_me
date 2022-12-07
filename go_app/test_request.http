@@ -15,21 +15,50 @@
 # }
 
 # GET USERS
-GET http://localhost:8080/user
-Authorization: NzlkYmViODE2NTgyLTE=
+# GET http://localhost:8080/user
+# Authorization: NzlkYmViODE2NTgyLTE=
 
 # # GET PROJECTS
 # GET http://localhost:8080/project
 # Authorization: NzlkYmViODE2NTgyLTE=
 
-# TASK CREATION
-# POST http://localhost:8080/task
-# content-type: application/json
+# # PROJECTS CREATION
+# POST  http://localhost:8080/project/
 # Authorization: NzlkYmViODE2NTgyLTE=
+# content-type: application/json
+
+# {
+#     "title": "test project",
+#     "color":0
+# }
+
+# # GET TASKS
+# GET http://localhost:8080/task/2
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # TASK CREATION
+# POST  http://localhost:8080/task
+# Authorization: NzlkYmViODE2NTgyLTE=
+# content-type: application/json
 
 # {
 #     "title": "first task",
 #     "description": "description",
 #     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
-#     "projectId":2
+#     "projectId":2,
+#     "statusId":0
+# }
+
+# # # TASK EDIT
+# PUT  http://localhost:8080/task/
+# Authorization: NzlkYmViODE2NTgyLTE=
+# content-type: application/json
+
+# {
+#     "id": 2, 
+#     "title": "first task",
+#     "description": "description",
+#     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
+#     "projectId":2,
+#     "statusId":0
 # }

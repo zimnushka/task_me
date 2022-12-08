@@ -13,6 +13,22 @@ type TaskUseCase struct {
 	projectUseCase ProjectUseCase
 }
 
+func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, error) {
+	task, err := useCase.taskRepository.GetTaskFromId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	access, err := useCase.projectUseCase.CheckUserHaveProject(task.ProjectId, userId)
+	if err != nil {
+		return nil, err
+	}
+	if access {
+		return task, err
+	}
+	return nil, errors.New("Forbiden")
+}
+
 func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, error) {
 	access, err := useCase.projectUseCase.CheckUserHaveProject(projectId, userId)
 	if err != nil {

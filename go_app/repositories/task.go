@@ -27,7 +27,7 @@ func (taskRepository TaskRepository) GetTaskFromId(id int) (*models.Task, error)
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.UserId, &item.Cost)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.AssignerId, &item.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func (taskRepository TaskRepository) GetTasks() ([]models.Task, error) {
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.UserId, &item.Cost)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.AssignerId, &item.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +83,7 @@ func (taskRepository TaskRepository) GetTasksFromUser(user_id int) ([]models.Tas
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.UserId, &item.Cost)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.AssignerId, &item.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +112,7 @@ func (taskRepository TaskRepository) GetTasksFromProject(projectId int) ([]model
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.UserId, &item.Cost)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.Time, &item.ProjectId, &item.Status, &item.AssignerId, &item.Cost)
 		if err != nil {
 			return nil, err
 		}
@@ -130,8 +130,8 @@ func (taskRepository TaskRepository) AddTask(task models.Task) (*models.Task, er
 		return nil, err
 	}
 	userIdLabel := "NULL"
-	if task.UserId != nil {
-		userIdLabel = fmt.Sprint("'", *task.UserId, "'")
+	if task.AssignerId != nil {
+		userIdLabel = fmt.Sprint("'", *task.AssignerId, "'")
 	}
 	query := fmt.Sprint("INSERT INTO tasks (title, description, project_id, due_date, status_id, user_id, cost) VALUES ('", task.Title, "','", task.Description, "','", task.ProjectId, "','", task.Time, "','", task.Status, "',", userIdLabel, ",'", task.Cost, "') RETURNING id")
 	results, err := db.Query(query)
@@ -153,8 +153,8 @@ func (taskRepository TaskRepository) UpdateTask(task models.Task) error {
 		return err
 	}
 	userIdLabel := "NULL"
-	if task.UserId != nil {
-		userIdLabel = fmt.Sprint("'", *task.UserId, "'")
+	if task.AssignerId != nil {
+		userIdLabel = fmt.Sprint("'", *task.AssignerId, "'")
 	}
 	query := fmt.Sprintf("UPDATE tasks SET title = '%s', description = '%s', project_id = '%d', due_date = '%s', status_id = '%d', user_id = %s, cost = '%d' WHERE id = %d", task.Title, task.Description, task.ProjectId, task.Time, task.Status, userIdLabel, task.Cost, *task.Id)
 	results, err := db.Query(query)

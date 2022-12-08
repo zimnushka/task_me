@@ -33,7 +33,11 @@
 # }
 
 # # GET TASKS
-# GET http://localhost:8080/task/2
+# GET http://localhost:8080/taskProject/2
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # GET TASK
+# GET http://localhost:8080/task/5
 # Authorization: NzlkYmViODE2NTgyLTE=
 
 # # TASK CREATION
@@ -51,21 +55,12 @@
 #     "cost":0
 # }
 
-# # TASK EDIT
-# PUT  http://localhost:8080/task/
-# Authorization: NzlkYmViODE2NTgyLTE=
-# content-type: application/json
+# TASK EDIT
+PUT  http://localhost:8080/task/
+Authorization: NzlkYmViODE2NTgyLTE=
+content-type: application/json
 
-# {
-#     "id":55,
-#     "title": "first",
-#     "description": "description",
-#     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
-#     "projectId":2,
-#     "statusId":0,
-#     "userId":null,
-#     "cost":0
-# }
+{"title": "api docs", "description": "", "projectId": 2, "dueDate": "2022-12-03T13:33:27.256", "cost": 0, "statusId": 0, "assignerId": 3, "id": 5}
 
 # DELETE TASKS
 # DELETE http://localhost:8080/task/48

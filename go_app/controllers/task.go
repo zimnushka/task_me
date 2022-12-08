@@ -36,7 +36,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
 		if err == nil {
-			task, err := controller.taskUseCase.GetTaskByProjectId(id, *user.Id)
+			task, err := controller.taskUseCase.GetTaskById(id, *user.Id)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return

@@ -30,6 +30,7 @@ func (controller AuthController) registrationHandler(w http.ResponseWriter, r *h
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		user.Color = 4283658239
 		response, err := controller.authUseCase.Register(user)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

@@ -14,6 +14,7 @@ import (
 type ProjectMemberController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
+	userUseCase    usecases.UserUseCase
 	models.Controller
 }
 
@@ -52,13 +53,14 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 	case "PUT":
 		var project models.ProjectUser
 		project.ProjectId = projectId
-		project.UserId, err = strconv.Atoi(r.URL.Query().Get("userId"))
-
+		email := r.URL.Query().Get("email")
+		member, err := controller.userUseCase.GetUserByEmail(email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		err = controller.projectUseCase.AddMemberToProject(project.ProjectId, project.UserId, *user.Id)
+
+		err = controller.projectUseCase.AddMemberToProject(project.ProjectId, *member.Id, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return

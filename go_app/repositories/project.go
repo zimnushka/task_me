@@ -90,7 +90,9 @@ func (projectRepository ProjectRepository) UpdateProject(project models.Project)
 	if err != nil {
 		return err
 	}
-	query := fmt.Sprintf("UPDATE projects SET title = '%s', color = '%d' WHERE id = %d", project.Title, project.Color, project.Id)
+	var id int
+	id = *project.Id
+	query := fmt.Sprintf("UPDATE projects SET title = '%s', color = '%d' WHERE id = %d", project.Title, project.Color, id)
 	results, err := db.Query(query)
 	if err == nil {
 		defer results.Close()

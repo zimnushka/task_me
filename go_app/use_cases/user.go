@@ -15,6 +15,10 @@ func (useCase *UserUseCase) GetUserById(id int) (*models.User, error) {
 	return useCase.userRepository.GetUserFromId(id)
 }
 
+func (useCase *UserUseCase) GetUserByEmail(email string) (*models.User, error) {
+	return useCase.userRepository.GetUserFromEmail(email)
+}
+
 func (useCase *UserUseCase) GetAllUsers() ([]models.User, error) {
 	return useCase.userRepository.GetUsers()
 }

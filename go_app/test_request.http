@@ -14,8 +14,20 @@
 #     "password": "12345678"
 # }
 
-# GET USERS
+# # GET USERS
 # GET http://localhost:8080/user
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # GET USERS FROM PROJECT
+# GET http://localhost:8080/projectMembers/2
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # ADD USERS TO PROJECT
+# PUT http://localhost:8080/projectMembers/24?email=a.negovskaya@yandex.ru
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # DELETE USERS FROM PROJECT
+# DELETE http://localhost:8080/projectMembers/25?userId=3
 # Authorization: NzlkYmViODE2NTgyLTE=
 
 # # GET PROJECTS
@@ -55,12 +67,12 @@
 #     "cost":0
 # }
 
-# TASK EDIT
-PUT  http://localhost:8080/task/
-Authorization: NzlkYmViODE2NTgyLTE=
-content-type: application/json
+# # TASK EDIT
+# PUT  http://localhost:8080/task/
+# Authorization: NzlkYmViODE2NTgyLTE=
+# content-type: application/json
 
-{"title": "api docs", "description": "", "projectId": 2, "dueDate": "2022-12-03T13:33:27.256", "cost": 0, "statusId": 0, "assignerId": 3, "id": 5}
+# {"title": "api docs", "description": "", "projectId": 2, "dueDate": "2022-12-03T13:33:27.256", "cost": 0, "statusId": 0, "assignerId": 3, "id": 5}
 
 # DELETE TASKS
 # DELETE http://localhost:8080/task/48

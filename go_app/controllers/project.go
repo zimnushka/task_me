@@ -14,6 +14,7 @@ import (
 type ProjectController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
+	corsUseCase    usecases.CorsUseCase
 	models.Controller
 }
 
@@ -24,6 +25,7 @@ func (controller ProjectController) Init() models.Controller {
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
+	controller.corsUseCase.DisableCors(w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -57,6 +59,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(jsonData))
 	case "POST":
 		var project models.Project
@@ -75,6 +78,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(s))
 	case "PUT":
 		var project models.Project
@@ -89,7 +93,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
@@ -103,7 +107,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	}
 

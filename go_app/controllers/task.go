@@ -14,6 +14,7 @@ import (
 type TaskController struct {
 	authUseCase usecases.AuthUseCase
 	taskUseCase usecases.TaskUseCase
+	corsUseCase usecases.CorsUseCase
 	models.Controller
 }
 
@@ -24,6 +25,7 @@ func (controller TaskController) Init() models.Controller {
 }
 
 func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Request) {
+	controller.corsUseCase.DisableCors(w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -57,6 +59,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(jsonData))
 	case "POST":
 		var task models.Task
@@ -75,6 +78,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(s))
 	case "PUT":
 		var task models.Task
@@ -89,7 +93,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
@@ -103,7 +107,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	}
 

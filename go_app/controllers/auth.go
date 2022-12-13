@@ -11,6 +11,7 @@ import (
 
 type AuthController struct {
 	authUseCase usecases.AuthUseCase
+	corsUseCase usecases.CorsUseCase
 	models.Controller
 }
 
@@ -22,7 +23,7 @@ func (controller AuthController) Init() models.Controller {
 }
 
 func (controller AuthController) registrationHandler(w http.ResponseWriter, r *http.Request) {
-
+	controller.corsUseCase.DisableCors(w, r)
 	if r.Method == "POST" {
 		var user models.User
 		err := json.NewDecoder(r.Body).Decode(&user)
@@ -36,12 +37,13 @@ func (controller AuthController) registrationHandler(w http.ResponseWriter, r *h
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, response)
 	}
 
 }
 func (controller AuthController) loginHandler(w http.ResponseWriter, r *http.Request) {
-
+	controller.corsUseCase.DisableCors(w, r)
 	if r.Method == "POST" {
 		type loginParams struct {
 			Email    string `json:"email"`
@@ -59,7 +61,7 @@ func (controller AuthController) loginHandler(w http.ResponseWriter, r *http.Req
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, response)
 	}
 

@@ -15,6 +15,7 @@ type ProjectMemberController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
 	userUseCase    usecases.UserUseCase
+	corsUseCase    usecases.CorsUseCase
 	models.Controller
 }
 
@@ -25,6 +26,7 @@ func (controller ProjectMemberController) Init() models.Controller {
 }
 
 func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWriter, r *http.Request) {
+	controller.corsUseCase.DisableCors(w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -49,6 +51,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(data))
 	case "PUT":
 		var project models.ProjectUser
@@ -65,6 +68,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	case "DELETE":
 		var project models.ProjectUser
@@ -80,6 +84,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	}
 

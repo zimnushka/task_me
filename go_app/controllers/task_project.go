@@ -14,6 +14,7 @@ import (
 type TaskProjectController struct {
 	authUseCase usecases.AuthUseCase
 	taskUseCase usecases.TaskUseCase
+	corsUseCase usecases.CorsUseCase
 	models.Controller
 }
 
@@ -24,6 +25,7 @@ func (controller TaskProjectController) Init() models.Controller {
 }
 
 func (controller TaskProjectController) taskHandler(w http.ResponseWriter, r *http.Request) {
+	controller.corsUseCase.DisableCors(w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -57,6 +59,7 @@ func (controller TaskProjectController) taskHandler(w http.ResponseWriter, r *ht
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(jsonData))
 
 	}

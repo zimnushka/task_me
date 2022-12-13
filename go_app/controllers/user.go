@@ -14,6 +14,7 @@ import (
 type UserController struct {
 	userUseCase usecases.UserUseCase
 	authUseCase usecases.AuthUseCase
+	corsUseCase usecases.CorsUseCase
 	models.Controller
 }
 
@@ -24,6 +25,11 @@ func (controller UserController) Init() models.Controller {
 }
 
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
+	tokenTest := r.Header.Get(models.HeaderAuth)
+	fmt.Print(tokenTest)
+	controller.corsUseCase.DisableCors(w, r)
+	tokenTest = r.Header.Get(models.HeaderAuth)
+	fmt.Print(tokenTest)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -66,6 +72,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 				return
 			}
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(jsonData))
 	case "POST":
 		var user models.User
@@ -84,6 +91,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, string(s))
 	case "PUT":
 		var user models.User
@@ -98,7 +106,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
@@ -112,7 +120,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "")
 	}
 

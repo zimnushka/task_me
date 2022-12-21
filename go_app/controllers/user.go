@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,28 +24,20 @@ func (controller UserController) Init() models.Controller {
 }
 
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
-	tokenTest := r.Header.Get(models.HeaderAuth)
-	fmt.Print(tokenTest)
-	controller.corsUseCase.DisableCors(w, r)
-	tokenTest = r.Header.Get(models.HeaderAuth)
-	fmt.Print(tokenTest)
+	controller.corsUseCase.DisableCors(&w, r)
+
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
 		path := strings.TrimPrefix(r.URL.Path, controller.Url)
 		if path == "me" {
-			user, err := controller.userUseCase.GetUserById(*user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
 			jsonData, err = json.Marshal(user)
-
 		} else {
 			id, err := strconv.Atoi(path)
 			if err == nil {
@@ -72,8 +63,9 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 				return
 			}
 		}
+
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonData))
+		w.Write([]byte(jsonData))
 	case "POST":
 		var user models.User
 		err := json.NewDecoder(r.Body).Decode(&user)
@@ -86,13 +78,13 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		s, err := json.Marshal(newUser)
+		jsonData, err := json.Marshal(newUser)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(s))
+		w.Write([]byte(jsonData))
 	case "PUT":
 		var user models.User
 
@@ -107,7 +99,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
@@ -121,7 +113,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	}
 
 }

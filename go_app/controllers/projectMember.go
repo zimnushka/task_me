@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,7 +25,7 @@ func (controller ProjectMemberController) Init() models.Controller {
 }
 
 func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(w, r)
+	controller.corsUseCase.DisableCors(&w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -52,7 +51,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(data))
+		w.Write([]byte(data))
 	case "PUT":
 		var project models.ProjectUser
 		project.ProjectId = projectId
@@ -69,7 +68,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	case "DELETE":
 		var project models.ProjectUser
 		project.ProjectId = projectId
@@ -85,7 +84,7 @@ func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWr
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	}
 
 }

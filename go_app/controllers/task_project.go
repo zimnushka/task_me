@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,13 +25,13 @@ func (controller TaskProjectController) Init() models.Controller {
 }
 
 func (controller TaskProjectController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(w, r)
+	controller.corsUseCase.DisableCors(&w, r)
+
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
@@ -55,13 +55,8 @@ func (controller TaskProjectController) taskHandler(w http.ResponseWriter, r *ht
 			jsonData, err = json.Marshal(tasks)
 
 		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonData))
-
+		w.Write([]byte(jsonData))
 	}
 
 }

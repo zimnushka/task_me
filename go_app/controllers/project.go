@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,7 +24,7 @@ func (controller ProjectController) Init() models.Controller {
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(w, r)
+	controller.corsUseCase.DisableCors(&w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -60,7 +59,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonData))
+		w.Write(jsonData)
 	case "POST":
 		var project models.Project
 		err := json.NewDecoder(r.Body).Decode(&project)
@@ -73,13 +72,13 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		s, err := json.Marshal(newproject)
+		jsonData, err := json.Marshal(newproject)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(s))
+		w.Write(jsonData)
 	case "PUT":
 		var project models.Project
 
@@ -94,7 +93,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
@@ -108,7 +107,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	}
 
 }

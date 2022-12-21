@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,7 +25,7 @@ func (controller TaskController) Init() models.Controller {
 }
 
 func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(w, r)
+	controller.corsUseCase.DisableCors(&w, r)
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -60,7 +60,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonData))
+		w.Write([]byte(jsonData))
 	case "POST":
 		var task models.Task
 		err := json.NewDecoder(r.Body).Decode(&task)
@@ -73,13 +73,13 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		s, err := json.Marshal(newtask)
+		jsonData, err := json.Marshal(newtask)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(s))
+		w.Write([]byte(jsonData))
 	case "PUT":
 		var task models.Task
 
@@ -94,7 +94,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	case "DELETE":
 		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
 		id, err := strconv.Atoi(idString)
@@ -108,7 +108,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "")
+		w.Write([]byte(""))
 	}
 
 }

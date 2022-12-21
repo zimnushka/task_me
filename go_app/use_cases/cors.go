@@ -7,15 +7,21 @@ import (
 type CorsUseCase struct {
 }
 
-func (useCase *CorsUseCase) DisableCors(w http.ResponseWriter, r *http.Request) {
-	allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, X-Requested-With, Authorization,X-CSRF-Token"
+func (useCase *CorsUseCase) DisableCors(w *http.ResponseWriter, r *http.Request) {
+	allowedHeaders := "Access-Control-Allow-Origin, Origin, Accept, Content-Type, Content-Length, Accept-Encoding, X-Requested-With, Authorization,X-CSRF-Token"
 
-	if origin := r.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
-		w.Header().Set("Access-Control-Expose-Headers", "Authorization")
+	(*w).Header().Add("Access-Control-Allow-Origin", "*")
+	(*w).Header().Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PATCH")
+	(*w).Header().Add("Access-Control-Allow-Headers", allowedHeaders)
+	if r.Method == "OPTIONS" {
+		(*w).WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method == "PATCH" {
+		(*w).WriteHeader(http.StatusOK)
+		return
 	}
 
 	return
+
 }

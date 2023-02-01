@@ -7,6 +7,17 @@ import (
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
+// @title           TaskMe API
+// @version         1.0
+// @description     Swagger documentation taskMe API
+
+// @host      localhost:8080
+// @BasePath  /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	controllers.AuthController{}.Init()
 	controllers.UserController{}.Init()

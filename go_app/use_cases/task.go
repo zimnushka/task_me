@@ -8,9 +8,43 @@ import (
 )
 
 type TaskUseCase struct {
-	taskRepository repositories.TaskRepository
+	taskRepository     repositories.TaskRepository
+	taskUserRepository repositories.TaskUserRepository
 
 	projectUseCase ProjectUseCase
+}
+
+func (useCase *TaskUseCase) AddMember(id, newMember, userId int) error {
+	access, err := useCase.CheckUserHaveTask(id, userId)
+	if err != nil {
+		return err
+	}
+	if access {
+		return useCase.taskUserRepository.AddLink(id, newMember)
+	}
+	return errors.New("Forbiden")
+}
+
+func (useCase *TaskUseCase) GetMembers(id, userId int) ([]models.User, error) {
+	access, err := useCase.CheckUserHaveTask(id, userId)
+	if err != nil {
+		return nil, err
+	}
+	if access {
+		return useCase.taskUserRepository.GetUsersByTask(id)
+	}
+	return nil, errors.New("Forbiden")
+}
+
+func (useCase *TaskUseCase) DeleteMember(id, memberId, userId int) error {
+	access, err := useCase.CheckUserHaveTask(id, userId)
+	if err != nil {
+		return err
+	}
+	if access {
+		return useCase.taskUserRepository.DeleteLink(id, memberId)
+	}
+	return errors.New("Forbiden")
 }
 
 func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, error) {
@@ -41,7 +75,7 @@ func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.
 }
 
 func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, error) {
-	return useCase.taskRepository.GetTasksFromUser(userId)
+	return useCase.taskUserRepository.GetTasksByUser(userId)
 }
 
 func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task, error) {
@@ -77,7 +111,7 @@ func (useCase *TaskUseCase) DeleteTask(id, userId int) error {
 func (useCase *TaskUseCase) CheckUserHaveTask(taskId, userId int) (bool, error) {
 	item, err := useCase.taskRepository.GetTaskFromId(taskId)
 	projects, err := useCase.projectUseCase.GetAllProjects(userId)
-	if err != nil {
+	if err != nil || item == nil {
 		return false, err
 	}
 	var id int

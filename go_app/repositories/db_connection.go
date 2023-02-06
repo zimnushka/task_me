@@ -16,5 +16,7 @@ func (TaskMeDB) GetDB() (*sql.DB, error) {
 	const url = "mariadb:3306"
 	const db = "taskMe"
 
-	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, url, db))
+	const debugUrl = "localhost:3306"
+
+	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, debugUrl, db))
 }

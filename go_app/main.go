@@ -25,6 +25,7 @@ func main() {
 	controllers.TaskController{}.Init()
 	controllers.TaskProjectController{}.Init()
 	controllers.ProjectMemberController{}.Init()
+	controllers.TaskMemberController{}.Init()
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8080", nil)
 }

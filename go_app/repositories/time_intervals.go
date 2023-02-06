@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -9,6 +10,58 @@ import (
 
 type IntervalRepository struct {
 	taskMeDB TaskMeDB
+}
+
+func (intervalRepository IntervalRepository) GetById(id int) (*models.Interval, error) {
+	db, err := intervalRepository.taskMeDB.GetDB()
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("SELECT * FROM intervals WHERE id = '%d'", id)
+	results, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer results.Close()
+
+	for results.Next() {
+		var item models.Interval
+		err := results.Scan(&item.Id, &item.TaskId, &item.TimeStart, &item.TimeEnd, &item.UserId)
+		if err != nil {
+			return nil, err
+		}
+
+		return &item, err
+	}
+
+	return nil, errors.New("Unexpected error user repository")
+}
+
+func (intervalRepository IntervalRepository) GetNotEndedIntervalByUserId(id int) (*models.Interval, error) {
+	db, err := intervalRepository.taskMeDB.GetDB()
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("SELECT * FROM intervals WHERE id = '%d' AND time_end = ''", id)
+	results, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer results.Close()
+
+	for results.Next() {
+		var item models.Interval
+		err := results.Scan(&item.Id, &item.TaskId, &item.TimeStart, &item.TimeEnd, &item.UserId)
+		if err != nil {
+			return nil, err
+		}
+
+		return &item, err
+	}
+
+	return nil, errors.New("Unexpected error user repository")
 }
 
 func (intervalRepository IntervalRepository) GetByTaskId(id int) ([]models.Interval, error) {
@@ -95,7 +148,9 @@ func (intervalRepository IntervalRepository) Update(item models.Interval) error 
 	if err != nil {
 		return err
 	}
-	query := fmt.Sprintf("UPDATE intervals SET task_id = '%d', user_id = '%d', time_start = '%s', time_end = '%s' WHERE id = %d", item.TaskId, item.UserId, item.TimeStart, item.TimeEnd, *&item.Id)
+	var id int
+	id = *item.Id
+	query := fmt.Sprintf("UPDATE intervals SET task_id = '%d', user_id = '%d', time_start = '%s', time_end = '%s' WHERE id = %d", item.TaskId, item.UserId, item.TimeStart, item.TimeEnd, id)
 	results, err := db.Query(query)
 	if err == nil {
 		defer results.Close()

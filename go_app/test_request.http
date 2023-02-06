@@ -103,3 +103,15 @@
 # # DELETE TASK MEMBER
 # DELETE http://localhost:8080/taskMembers/5?user_id=1
 # Authorization: NzlkYmViODE2NTgyLTE=
+
+# # GET INTERVALS
+# GET http://localhost:8080/timeIntervals/5
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # ADD INTERVAL
+# POST http://localhost:8080/timeIntervals/5
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # END INTERVAL
+PUT http://localhost:8080/timeIntervals/5?user_id=1
+Authorization: NzlkYmViODE2NTgyLTE=

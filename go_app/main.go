@@ -26,6 +26,7 @@ func main() {
 	controllers.TaskProjectController{}.Init()
 	controllers.ProjectMemberController{}.Init()
 	controllers.TaskMemberController{}.Init()
+	controllers.TimeIntervalController{}.Init()
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8080", nil)
 }

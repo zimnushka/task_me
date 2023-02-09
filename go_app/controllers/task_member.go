@@ -48,16 +48,14 @@ func (controller TaskMemberController) taskHandler(w http.ResponseWriter, r *htt
 		jsonData, err := json.Marshal(users)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonData))
-	case "PUT":
-		var user_id int
-		user_id_string := r.URL.Query().Get("user_id")
-		user_id, err = strconv.Atoi(user_id_string)
+	case "POST":
+		var users []models.User
+		err := json.NewDecoder(r.Body).Decode(&users)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
-		err := controller.taskUseCase.AddMember(taskId, user_id, *user.Id)
+		err = controller.taskUseCase.UpdateMembersList(taskId, users, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -65,22 +63,7 @@ func (controller TaskMemberController) taskHandler(w http.ResponseWriter, r *htt
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(""))
-	case "DELETE":
-		var user_id int
-		user_id_string := r.URL.Query().Get("user_id")
-		user_id, err = strconv.Atoi(user_id_string)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
 
-		err = controller.taskUseCase.DeleteMember(taskId, user_id, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
 	}
 
 }

@@ -39,8 +39,8 @@ func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Int
 	return nil, errors.New("Forbiden")
 }
 
-func (useCase *TimeIntervalUseCase) GetNotEndedInterval(userId int) (*models.Interval, error) {
-	interval, err := useCase.intervalRepository.GetNotEndedIntervalByUserId(userId)
+func (useCase *TimeIntervalUseCase) GetNotEndedInterval(taskId, userId int) (*models.Interval, error) {
+	interval, err := useCase.intervalRepository.GetNotEndedInterval(taskId, userId)
 	if err != nil {
 		return nil, err
 	}

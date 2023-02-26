@@ -38,13 +38,13 @@ func (intervalRepository IntervalRepository) GetById(id int) (*models.Interval, 
 	return nil, errors.New("Unexpected error user repository")
 }
 
-func (intervalRepository IntervalRepository) GetNotEndedIntervalByUserId(id int) (*models.Interval, error) {
+func (intervalRepository IntervalRepository) GetNotEndedInterval(taskId, userId int) (*models.Interval, error) {
 	db, err := intervalRepository.taskMeDB.GetDB()
 	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT * FROM intervals WHERE id = '%d' AND time_end = ''", id)
+	query := fmt.Sprintf("SELECT * FROM intervals WHERE user_id = '%d' AND task_id = '%d' AND time_end = ''", userId, taskId)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err

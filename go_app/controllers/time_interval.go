@@ -74,7 +74,7 @@ func (controller TimeIntervalController) taskHandler(w http.ResponseWriter, r *h
 		var interval models.Interval
 		interval.TaskId = id
 		interval.UserId = *user.Id
-		interval.TimeStart = time.Now().String()
+		interval.TimeStart = time.Now().Format(time.RFC3339)
 
 		newInterval, err := controller.intervalUseCase.AddInterval(interval, interval.UserId)
 		if err != nil {
@@ -90,9 +90,15 @@ func (controller TimeIntervalController) taskHandler(w http.ResponseWriter, r *h
 		w.Write([]byte(jsonData))
 	case "PUT":
 		var jsonData []byte
+		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		id, err := strconv.Atoi(idString)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
 
-		interval, err := controller.intervalUseCase.GetNotEndedInterval(*user.Id)
-		interval.TimeEnd = time.Now().String()
+		interval, err := controller.intervalUseCase.GetNotEndedInterval(id, *user.Id)
+		interval.TimeEnd = time.Now().Format(time.RFC3339)
 
 		err = controller.intervalUseCase.UpdateInterval(*interval, *user.Id)
 		if err != nil {

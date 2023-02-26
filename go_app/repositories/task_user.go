@@ -17,7 +17,7 @@ func (taskRepository TaskUserRepository) GetTasksByUser(id int) ([]models.Task, 
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT tasks.id, tasks.title, tasks.start_date, tasks.stop_date, tasks.project_id, tasks.cost, tasks.status_id FROM TasksUsers INNER JOIN tasks ON TasksUsers.task_id=tasks.id AND TasksUsers.user_id=%d", id)
+	query := fmt.Sprintf("SELECT tasks.id,  tasks.title, tasks.description, tasks.start_date, tasks.stop_date, tasks.project_id, tasks.cost, tasks.status_id FROM TasksUsers INNER JOIN tasks ON TasksUsers.task_id=tasks.id AND TasksUsers.user_id=%d", id)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (taskRepository TaskUserRepository) GetTasksByUser(id int) ([]models.Task, 
 
 	for results.Next() {
 		var item models.Task
-		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.StartDate, &item.ProjectId, &item.Status, &item.StopDate, &item.Cost)
+		err := results.Scan(&item.Id, &item.Title, &item.Description, &item.StartDate, &item.StopDate, &item.ProjectId, &item.Cost, &item.Status)
 		if err != nil {
 			return nil, err
 		}

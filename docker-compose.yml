@@ -1,3 +1,7 @@
+volumes:
+  task_me_go_mariadb-dbdata:
+     external: true
+
 services:
   nginx:
     container_name: nginx
@@ -31,7 +35,7 @@ services:
     environment:
       - MARIADB_DATABASE=${MARIADB_DATABASE}
     volumes:
-      - mariadb-dbdata:/var/lib/mysql
+      - task_me_go_mariadb-dbdata:/var/lib/mysql
     command: '--default-authentication-plugin=mysql_native_password'
     ports:
       - "3306:3306"
@@ -50,6 +54,5 @@ services:
       - 8081:80
 
 
-volumes:
-  mariadb-dbdata:
+
 

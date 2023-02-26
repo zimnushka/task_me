@@ -13,7 +13,8 @@ type Task struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Status      int    `json:"statusId"`
-	Time        string `json:"dueDate"`
-	AssignerId  *int   `json:"assignerId"`
+	StartDate   string `json:"startDate"`
+	StopDate    string `json:"stopDate"`
 	Cost        int    `json:"cost"`
+	Assigners   []int  `json:"assigners"`
 }

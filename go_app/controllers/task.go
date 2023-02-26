@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"time"
 
 	"net/http"
 	"strconv"
@@ -68,6 +69,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		task.StartDate = time.Now().Format(time.RFC3339)
 		newtask, err := controller.taskUseCase.AddTask(task, *user.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

@@ -7,6 +7,17 @@ import (
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
+// @title           TaskMe API
+// @version         1.0
+// @description     Swagger documentation taskMe API
+
+// @host      localhost:8080
+// @BasePath  /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	controllers.AuthController{}.Init()
 	controllers.UserController{}.Init()
@@ -14,6 +25,8 @@ func main() {
 	controllers.TaskController{}.Init()
 	controllers.TaskProjectController{}.Init()
 	controllers.ProjectMemberController{}.Init()
+	controllers.TaskMemberController{}.Init()
+	controllers.TimeIntervalController{}.Init()
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8080", nil)
 }

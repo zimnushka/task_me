@@ -48,6 +48,10 @@
 # GET http://localhost:8080/taskProject/2
 # Authorization: NzlkYmViODE2NTgyLTE=
 
+# GET TASKS
+# GET http://localhost:8080/task/
+# Authorization: NzlkYmViODE2NTgyLTE=
+
 # # GET TASK
 # GET http://localhost:8080/task/5
 # Authorization: NzlkYmViODE2NTgyLTE=
@@ -60,10 +64,10 @@
 # {
 #     "title": "first task",
 #     "description": "description",
-#     "dueDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
+    # "StartDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
+    # "StopDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
 #     "projectId":2,
 #     "statusId":0,
-#     "userId":1,
 #     "cost":0
 # }
 
@@ -72,8 +76,42 @@
 # Authorization: NzlkYmViODE2NTgyLTE=
 # content-type: application/json
 
-# {"title": "api docs", "description": "", "projectId": 2, "dueDate": "2022-12-03T13:33:27.256", "cost": 0, "statusId": 0, "assignerId": 3, "id": 5}
+# {
+#     "title": "api docs", 
+#     "description": "", 
+#     "projectId": 2, 
+#     "StartDate": "2022-05-29 15:50:07.413562417 +0000 UTC",
+#     "StopDate": "2022-05-29 15:50:07.413562417 +0000 UTC", 
+#     "cost": 0, 
+#     "statusId": 0,
+#     "id": 111
+# }
 
-# DELETE TASKS
-# DELETE http://localhost:8080/task/48
+# # DELETE TASKS
+# DELETE http://localhost:8080/task/111
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+
+# # GET TASK MEMBERS
+# GET http://localhost:8080/taskMembers/5
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # ADD TASK MEMBER
+# PUT http://localhost:8080/taskMembers/5?user_id=1
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # DELETE TASK MEMBER
+# DELETE http://localhost:8080/taskMembers/5?user_id=1
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # GET INTERVALS
+# GET http://localhost:8080/timeIntervals/5
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # ADD INTERVAL
+# POST http://localhost:8080/timeIntervals/5
+# Authorization: NzlkYmViODE2NTgyLTE=
+
+# # END INTERVAL
+# PUT http://localhost:8080/timeIntervals/5
 # Authorization: NzlkYmViODE2NTgyLTE=

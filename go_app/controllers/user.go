@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -14,18 +13,18 @@ import (
 type UserController struct {
 	userUseCase usecases.UserUseCase
 	authUseCase usecases.AuthUseCase
-	corsUseCase usecases.CorsUseCase
+
 	models.Controller
 }
 
-func (controller UserController) Init(handler chi.Mux) models.Controller {
-	controller.Url = "/user/"
-	controller.RegisterController("", controller.userHandler, handler)
+func (controller UserController) Init(router *gin.Engine) models.Controller {
+	// controller.Url = "/user/"
+	// controller.RegisterController("", controller.userHandler, handler)
 	return controller.Controller
 }
 
 func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
+	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
 
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
@@ -36,9 +35,9 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
-		path := strings.TrimPrefix(r.URL.Path, controller.Url)
+		path := "-1" //TODO
 		if path == "me" {
-			jsonData, err = json.Marshal(user)
+			jsonData, _ = json.Marshal(user)
 		} else {
 			id, err := strconv.Atoi(path)
 			if err == nil {
@@ -47,7 +46,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 					http.Error(w, err.Error(), http.StatusNotFound)
 					return
 				}
-				jsonData, err = json.Marshal(user)
+				jsonData, _ = json.Marshal(user)
 
 			} else {
 				err = nil
@@ -56,7 +55,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 					http.Error(w, err.Error(), http.StatusNotFound)
 					return
 				}
-				jsonData, err = json.Marshal(users)
+				jsonData, _ = json.Marshal(users)
 
 			}
 			if err != nil {
@@ -102,7 +101,7 @@ func (controller UserController) userHandler(w http.ResponseWriter, r *http.Requ
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(""))
 	case "DELETE":
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		idString := "-1" //TODO
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

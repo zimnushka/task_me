@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -15,18 +15,18 @@ import (
 type TaskMemberController struct {
 	authUseCase usecases.AuthUseCase
 	taskUseCase usecases.TaskUseCase
-	corsUseCase usecases.CorsUseCase
+
 	models.Controller
 }
 
-func (controller TaskMemberController) Init(handler chi.Mux) models.Controller {
-	controller.Url = "/taskMembers/"
-	controller.RegisterController("", controller.taskHandler, handler)
+func (controller TaskMemberController) Init(router *gin.Engine) models.Controller {
+	// controller.Url = "/taskMembers/"
+	// controller.RegisterController("", controller.taskHandler, handler)
 	return controller.Controller
 }
 
 func (controller TaskMemberController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
+	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
 
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
@@ -46,7 +46,7 @@ func (controller TaskMemberController) taskHandler(w http.ResponseWriter, r *htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		jsonData, err := json.Marshal(users)
+		jsonData, _ := json.Marshal(users)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonData))
 	case "POST":

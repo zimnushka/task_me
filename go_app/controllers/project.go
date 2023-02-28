@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -14,18 +13,18 @@ import (
 type ProjectController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
-	corsUseCase    usecases.CorsUseCase
+
 	models.Controller
 }
 
-func (controller ProjectController) Init(handler chi.Mux) models.Controller {
-	controller.Url = "/project/"
-	controller.RegisterController("", controller.projectHandler, handler)
+func (controller ProjectController) Init(router *gin.Engine) models.Controller {
+	// controller.Url = "/project/"
+	// controller.RegisterController("", controller.projectHandler, handler)
 	return controller.Controller
 }
 
 func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
+	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -35,7 +34,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		idString := "-1" //TODO
 		id, err := strconv.Atoi(idString)
 		if err == nil {
 			project, err := controller.projectUseCase.GetProjectById(id, *user.Id)
@@ -43,7 +42,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			jsonData, err = json.Marshal(project)
+			jsonData, _ = json.Marshal(project)
 
 		} else {
 			err = nil
@@ -52,7 +51,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			jsonData, err = json.Marshal(projects)
+			jsonData, _ = json.Marshal(projects)
 
 		}
 		if err != nil {
@@ -96,7 +95,7 @@ func (controller ProjectController) projectHandler(w http.ResponseWriter, r *htt
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(""))
 	case "DELETE":
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		idString := "-1" //TODO
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

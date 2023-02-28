@@ -6,9 +6,8 @@ import (
 
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -16,18 +15,18 @@ import (
 type TaskController struct {
 	authUseCase usecases.AuthUseCase
 	taskUseCase usecases.TaskUseCase
-	corsUseCase usecases.CorsUseCase
+
 	models.Controller
 }
 
-func (controller TaskController) Init(handler chi.Mux) models.Controller {
-	controller.Url = "/task/"
-	controller.RegisterController("", controller.taskHandler, handler)
+func (controller TaskController) Init(router *gin.Engine) models.Controller {
+	// controller.Url = "/task/"
+	// controller.RegisterController("", controller.taskHandler, handler)
 	return controller.Controller
 }
 
 func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
+	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -37,7 +36,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	case "GET":
 		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		idString := "-1" //TODO
 		id, err := strconv.Atoi(idString)
 		if err == nil {
 			task, err := controller.taskUseCase.GetTaskById(id, *user.Id)
@@ -45,7 +44,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			jsonData, err = json.Marshal(task)
+			jsonData, _ = json.Marshal(task)
 
 		} else {
 			err = nil
@@ -54,7 +53,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			jsonData, err = json.Marshal(tasks)
+			jsonData, _ = json.Marshal(tasks)
 
 		}
 		if err != nil {
@@ -99,7 +98,7 @@ func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Requ
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(""))
 	case "DELETE":
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
+		idString := "-1" //TODO
 		id, err := strconv.Atoi(idString)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

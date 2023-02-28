@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -15,18 +15,18 @@ type ProjectMemberController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
 	userUseCase    usecases.UserUseCase
-	corsUseCase    usecases.CorsUseCase
+
 	models.Controller
 }
 
-func (controller ProjectMemberController) Init(handler chi.Mux) models.Controller {
-	controller.Url = "/projectMembers/"
-	controller.RegisterController("", controller.projectMemberHandler, handler)
+func (controller ProjectMemberController) Init(router *gin.Engine) models.Controller {
+	// controller.Url = "/projectMembers/"
+	// controller.RegisterController("", controller.projectMemberHandler, handler)
 	return controller.Controller
 }
 
 func (controller ProjectMemberController) projectMemberHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
+	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
 	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)

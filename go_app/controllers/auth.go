@@ -5,6 +5,7 @@ import (
 
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -28,10 +29,10 @@ type AuthController struct {
 	models.Controller
 }
 
-func (controller AuthController) Init() models.Controller {
+func (controller AuthController) Init(handler chi.Mux) models.Controller {
 	controller.Url = "/auth"
-	controller.RegisterController("/login", controller.loginHandler)
-	controller.RegisterController("/registration", controller.registrationHandler)
+	controller.RegisterController("/login", controller.loginHandler, handler)
+	controller.RegisterController("/registration", controller.registrationHandler, handler)
 	return controller.Controller
 }
 

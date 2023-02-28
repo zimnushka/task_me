@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -19,9 +20,9 @@ type TimeIntervalController struct {
 	models.Controller
 }
 
-func (controller TimeIntervalController) Init() models.Controller {
+func (controller TimeIntervalController) Init(handler chi.Mux) models.Controller {
 	controller.Url = "/timeIntervals/"
-	controller.RegisterController("", controller.taskHandler)
+	controller.RegisterController("", controller.taskHandler, handler)
 	return controller.Controller
 }
 

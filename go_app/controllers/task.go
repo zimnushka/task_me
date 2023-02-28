@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -19,9 +20,9 @@ type TaskController struct {
 	models.Controller
 }
 
-func (controller TaskController) Init() models.Controller {
+func (controller TaskController) Init(handler chi.Mux) models.Controller {
 	controller.Url = "/task/"
-	controller.RegisterController("", controller.taskHandler)
+	controller.RegisterController("", controller.taskHandler, handler)
 	return controller.Controller
 }
 

@@ -38,7 +38,6 @@ func main() {
 	controllers.ProjectController{}.Init(router)
 	controllers.TaskController{}.Init(router)
 	controllers.TaskProjectController{}.Init(router)
-	controllers.ProjectMemberController{}.Init(router)
 	controllers.TaskMemberController{}.Init(router)
 	controllers.TimeIntervalController{}.Init(router)
 

@@ -12,6 +12,7 @@ import (
 type ProjectController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
+	userUseCase    usecases.UserUseCase
 
 	models.Controller
 }
@@ -22,6 +23,73 @@ func (controller ProjectController) Init(router *gin.Engine) {
 	router.POST("/project", controller.createProject)
 	router.PUT("/project", controller.editProject)
 	router.DELETE("/project/:id", controller.deleteProject)
+
+	router.GET("/project/member/:id", controller.getProjectMembers)
+	router.POST("/project/member/:id", controller.addProjectMember)
+	router.PUT("/project/member/:id", controller.deleteProjectMember)
+}
+
+func (controller ProjectController) getProjectMembers(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.projectUseCase.GetProjectUsers(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller ProjectController) addProjectMember(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	email := c.Query("email")
+
+	member, err := controller.userUseCase.GetUserByEmail(email)
+	if err != nil {
+		return // TODO add error message
+	}
+
+	err = controller.projectUseCase.AddMemberToProject(id, *member.Id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+}
+
+func (controller ProjectController) deleteProjectMember(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+
+	memberId, err := strconv.Atoi(c.Query("userId"))
+
+	if err != nil {
+		return // TODO add error message
+	}
+
+	if err = controller.projectUseCase.DeleteMemberFromProject(id, memberId, *user.Id); err != nil {
+		return // TODO add error message
+	}
+	c.String(http.StatusOK, "")
 }
 
 func (controller ProjectController) getProjectById(c *gin.Context) {

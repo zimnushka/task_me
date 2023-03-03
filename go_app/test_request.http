@@ -19,7 +19,7 @@
 # Authorization: NzlkYmViODE2NTgyLTE=
 
 # # GET USERS FROM PROJECT
-# GET http://localhost:8080/projectMembers/2
+# GET http://localhost:8080/project/member/2
 # Authorization: NzlkYmViODE2NTgyLTE=
 
 # # ADD USERS TO PROJECT

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -17,97 +16,89 @@ type ProjectController struct {
 	models.Controller
 }
 
-func (controller ProjectController) Init(router *gin.Engine) models.Controller {
-	// controller.Url = "/project/"
-	// controller.RegisterController("", controller.projectHandler, handler)
-	return controller.Controller
+func (controller ProjectController) Init(router *gin.Engine) {
+	router.GET("/project", controller.getProjects)
+	router.GET("/project/:id", controller.getProjectById)
+	router.POST("/project", controller.createProject)
+	router.PUT("/project", controller.editProject)
+	router.DELETE("/project/:id", controller.deleteProject)
 }
 
-func (controller ProjectController) projectHandler(w http.ResponseWriter, r *http.Request) {
-	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+func (controller ProjectController) getProjectById(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.projectUseCase.GetProjectById(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+func (controller ProjectController) getProjects(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.projectUseCase.GetAllProjects(*user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller ProjectController) createProject(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
 	}
 
-	switch r.Method {
-	case "GET":
-		var jsonData []byte
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err == nil {
-			project, err := controller.projectUseCase.GetProjectById(id, *user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(project)
+	var project models.Project
+	if err := c.BindJSON(&project); err != nil {
+		return // TODO add error message
+	}
+	newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, *newproject)
+}
 
-		} else {
-			err = nil
-			projects, err := controller.projectUseCase.GetAllProjects(*user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(projects)
-
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(jsonData)
-	case "POST":
-		var project models.Project
-		err := json.NewDecoder(r.Body).Decode(&project)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err := json.Marshal(newproject)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(jsonData)
-	case "PUT":
-		var project models.Project
-
-		err := json.NewDecoder(r.Body).Decode(&project)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		err = controller.projectUseCase.UpdateProject(project, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
-	case "DELETE":
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		err = controller.projectUseCase.DeleteProject(id, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
+func (controller ProjectController) editProject(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	var project models.Project
+	if err := c.BindJSON(&project); err != nil {
+		return // TODO add error message
+	}
+	if err := controller.projectUseCase.UpdateProject(project, *user.Id); err != nil {
+		return // TODO add error message
 	}
 
+	c.IndentedJSON(http.StatusOK, project)
+}
+
+func (controller ProjectController) deleteProject(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	if err = controller.projectUseCase.DeleteProject(id, *user.Id); err != nil {
+		return // TODO add error message
+	}
+
+	c.String(http.StatusOK, "")
 }

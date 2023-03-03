@@ -21,7 +21,7 @@ type TimeIntervalController struct {
 
 func (controller TimeIntervalController) Init(router *gin.Engine) models.Controller {
 	// controller.Url = "/timeIntervals/"
-	// controller.RegisterController("", controller.taskHandler, handler)
+	// controller.RegisterController("", controller.taskHandler, handler)e
 	return controller.Controller
 }
 

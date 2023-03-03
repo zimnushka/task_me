@@ -34,8 +34,12 @@
 # GET http://localhost:8080/project
 # Authorization: NzlkYmViODE2NTgyLTE=
 
+# # GET PROJECTS BY ID
+# GET http://localhost:8080/project/2
+# Authorization: NzlkYmViODE2NTgyLTE=
+
 # # PROJECTS CREATION
-# POST  http://localhost:8080/project/
+# POST  http://localhost:8080/project
 # Authorization: NzlkYmViODE2NTgyLTE=
 # content-type: application/json
 
@@ -43,6 +47,10 @@
 #     "title": "test project",
 #     "color":0
 # }
+
+# # DELETE PROJECT
+# DELETE http://localhost:8080/project/36
+# Authorization: NzlkYmViODE2NTgyLTE=
 
 # # GET TASKS
 # GET http://localhost:8080/taskProject/2

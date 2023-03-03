@@ -1,11 +1,55 @@
 basePath: /
+definitions:
+  models.User:
+    properties:
+      color:
+        type: integer
+      cost:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: Swagger documentation taskMe API
   title: TaskMe API
   version: "1.0"
-paths: {}
+paths:
+  /auth/registration:
+    get:
+      consumes:
+      - application/json
+      description: Register new user
+      operationId: auth-register
+      parameters:
+      - description: Some ID
+        in: path
+        name: some_id
+        required: true
+        type: integer
+      - description: Some ID
+        in: body
+        name: some_id
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: apiKey
+          schema:
+            type: string
+      summary: Register
+      tags:
+      - Auth
 securityDefinitions:
   ApiKeyAuth:
     in: header

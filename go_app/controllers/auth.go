@@ -8,15 +8,6 @@ import (
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
-// @Summary Registration
-// @Tags Auth
-// @Description Registr new user
-// @ID AuthRegistration
-// @Accept json
-// @Produce json
-// @Success 200 {integer} integer 1
-// @Router  /registration [get]
-
 type AuthController struct {
 	authUseCase usecases.AuthUseCase
 }
@@ -27,6 +18,16 @@ func (controller AuthController) Init(router *gin.Engine) {
 
 }
 
+// @Summary		Register
+// @Description	Register new user
+// @ID				auth-register
+// @Tags Auth
+// @Accept			json
+// @Produce		json
+// @Param			some_id	path		int				true	"Some ID"
+// @Param			some_id	body		models.User			true	"Some ID"
+// @Success		200		{string}	string			"apiKey"
+// @Router			/auth/registration [get]
 func (controller AuthController) registrationHandler(c *gin.Context) {
 
 	var newUser models.User

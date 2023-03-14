@@ -15,7 +15,6 @@ type AuthController struct {
 func (controller AuthController) Init(router *gin.Engine) {
 	router.POST("/auth/login", controller.loginHandler)
 	router.POST("/auth/registration", controller.registrationHandler)
-
 }
 
 // @Summary		Register

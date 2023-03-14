@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"time"
-
 	"net/http"
 	"strconv"
 
@@ -15,102 +12,151 @@ import (
 type TaskController struct {
 	authUseCase usecases.AuthUseCase
 	taskUseCase usecases.TaskUseCase
-
-	models.Controller
 }
 
-func (controller TaskController) Init(router *gin.Engine) models.Controller {
-	// controller.Url = "/task/"
-	// controller.RegisterController("", controller.taskHandler, handler)
-	return controller.Controller
+func (controller TaskController) Init(router *gin.Engine) {
+	router.GET("/task/project/:id", controller.getTaskByProject)
+
+	router.GET("/task", controller.getUserTasks)
+	router.GET("/task/:id", controller.getTaskById)
+	router.POST("/task", controller.addTask)
+	router.PUT("/task", controller.editTask)
+	router.DELETE("/task/:id", controller.deleteTask)
+
+	router.GET("/task/member/:id", controller.getTaskMembers)
+	router.POST("/task/member/:id", controller.editTaskMembersList)
 }
 
-func (controller TaskController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+func (controller TaskController) getTaskById(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.taskUseCase.GetTaskById(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+func (controller TaskController) getUserTasks(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.taskUseCase.GetAllTasks(*user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller TaskController) addTask(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	var item models.Task
+	if err := c.BindJSON(&item); err != nil {
+		return // TODO add error message
+	}
+	newItem, err := controller.taskUseCase.AddTask(item, *user.Id)
+	if err != nil {
+		return // TODO add error message
 	}
 
-	switch r.Method {
-	case "GET":
-		var jsonData []byte
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err == nil {
-			task, err := controller.taskUseCase.GetTaskById(id, *user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(task)
+	c.IndentedJSON(http.StatusOK, newItem)
+}
 
-		} else {
-			err = nil
-			tasks, err := controller.taskUseCase.GetAllTasks(*user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(tasks)
-
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "POST":
-		var task models.Task
-		err := json.NewDecoder(r.Body).Decode(&task)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		task.StartDate = time.Now().Format(time.RFC3339)
-		newtask, err := controller.taskUseCase.AddTask(task, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err := json.Marshal(newtask)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "PUT":
-		var task models.Task
-
-		err := json.NewDecoder(r.Body).Decode(&task)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		err = controller.taskUseCase.UpdateTask(task, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
-	case "DELETE":
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		err = controller.taskUseCase.DeleteTask(id, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
+func (controller TaskController) editTask(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	var item models.Task
+	if err := c.BindJSON(&item); err != nil {
+		return // TODO add error message
+	}
+	if err := controller.taskUseCase.UpdateTask(item, *user.Id); err != nil {
+		return // TODO add error message
 	}
 
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+func (controller TaskController) deleteTask(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	if err = controller.taskUseCase.DeleteTask(id, *user.Id); err != nil {
+		return // TODO add error message
+	}
+
+	c.String(http.StatusOK, "")
+}
+
+func (controller TaskController) getTaskMembers(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.taskUseCase.GetMembers(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller TaskController) editTaskMembersList(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	var items []models.User
+	if err := c.BindJSON(&items); err != nil {
+		return // TODO add error message
+	}
+	err = controller.taskUseCase.UpdateMembersList(id, items, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.String(http.StatusOK, "")
+}
+
+func (controller TaskController) getTaskByProject(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.taskUseCase.GetTaskByProjectId(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
 }

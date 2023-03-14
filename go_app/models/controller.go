@@ -1,11 +1,9 @@
 package models
 
-import (
-	"github.com/go-chi/chi"
-)
+import "github.com/gin-gonic/gin"
 
 const HeaderAuth = "Authorization"
 
 type Controller interface {
-	Init(handler chi.Mux)
+	Init(router *gin.Engine)
 }

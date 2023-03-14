@@ -13,8 +13,6 @@ type ProjectController struct {
 	authUseCase    usecases.AuthUseCase
 	projectUseCase usecases.ProjectUseCase
 	userUseCase    usecases.UserUseCase
-
-	models.Controller
 }
 
 func (controller ProjectController) Init(router *gin.Engine) {

@@ -37,8 +37,6 @@ func main() {
 	controllers.UserController{}.Init(router)
 	controllers.ProjectController{}.Init(router)
 	controllers.TaskController{}.Init(router)
-	controllers.TaskProjectController{}.Init(router)
-	controllers.TaskMemberController{}.Init(router)
 	controllers.TimeIntervalController{}.Init(router)
 
 	// router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

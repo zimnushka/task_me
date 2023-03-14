@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -13,107 +12,100 @@ import (
 type UserController struct {
 	userUseCase usecases.UserUseCase
 	authUseCase usecases.AuthUseCase
-
-	models.Controller
 }
 
-func (controller UserController) Init(router *gin.Engine) models.Controller {
-	// controller.Url = "/user/"
-	// controller.RegisterController("", controller.userHandler, handler)
-	return controller.Controller
+func (controller UserController) Init(router *gin.Engine) {
+	router.GET("/user", controller.getUsers)
+	router.GET("/user/:id", controller.getUserById)
+	router.GET("/user/me", controller.getUserMe)
+	router.POST("/user", controller.addUser)
+	router.PUT("/user", controller.editUser)
+	router.DELETE("/user/:id", controller.deleteUser)
 }
 
-func (controller UserController) userHandler(w http.ResponseWriter, r *http.Request) {
-	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
-
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+func (controller UserController) getUserMe(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, user)
+}
+
+func (controller UserController) getUserById(c *gin.Context) {
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.userUseCase.GetUserById(id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+func (controller UserController) getUsers(c *gin.Context) {
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.userUseCase.GetAllUsers()
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller UserController) addUser(c *gin.Context) {
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	if err != nil {
+		return // TODO add error message
+	}
+	var item models.User
+	if err := c.BindJSON(&item); err != nil {
+		return // TODO add error message
+	}
+	newItem, err := controller.userUseCase.AddUser(item)
+	if err != nil {
+		return // TODO add error message
 	}
 
-	switch r.Method {
-	case "GET":
-		var jsonData []byte
-		path := "-1" //TODO
-		if path == "me" {
-			jsonData, _ = json.Marshal(user)
-		} else {
-			id, err := strconv.Atoi(path)
-			if err == nil {
-				user, err := controller.userUseCase.GetUserById(id)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusNotFound)
-					return
-				}
-				jsonData, _ = json.Marshal(user)
+	c.IndentedJSON(http.StatusOK, newItem)
+}
 
-			} else {
-				err = nil
-				users, err := controller.userUseCase.GetAllUsers()
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusNotFound)
-					return
-				}
-				jsonData, _ = json.Marshal(users)
-
-			}
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "POST":
-		var user models.User
-		err := json.NewDecoder(r.Body).Decode(&user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		newUser, err := controller.userUseCase.AddUser(user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err := json.Marshal(newUser)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "PUT":
-		var user models.User
-
-		err := json.NewDecoder(r.Body).Decode(&user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		_, err = controller.userUseCase.UpdateUser(user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
-	case "DELETE":
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		err = controller.userUseCase.DeleteUser(id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
+func (controller UserController) editUser(c *gin.Context) {
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	if err != nil {
+		return // TODO add error message
+	}
+	var item models.User
+	if err := c.BindJSON(&item); err != nil {
+		return // TODO add error message
+	}
+	if _, err := controller.userUseCase.UpdateUser(item); err != nil {
+		return // TODO add error message
 	}
 
+	c.IndentedJSON(http.StatusOK, item)
+}
+
+func (controller UserController) deleteUser(c *gin.Context) {
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	if err = controller.userUseCase.DeleteUser(id); err != nil {
+		return // TODO add error message
+	}
+
+	c.String(http.StatusOK, "")
 }

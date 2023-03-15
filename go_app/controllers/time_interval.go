@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"time"
-
 	"net/http"
 	"strconv"
 
@@ -15,103 +12,75 @@ import (
 type TimeIntervalController struct {
 	authUseCase     usecases.AuthUseCase
 	intervalUseCase usecases.TimeIntervalUseCase
-
-	models.Controller
 }
 
-func (controller TimeIntervalController) Init(router *gin.Engine) models.Controller {
-	// controller.Url = "/timeIntervals/"
-	// controller.RegisterController("", controller.taskHandler, handler)e
-	return controller.Controller
+func (controller TimeIntervalController) Init(router *gin.Engine) {
+	router.GET("/timeIntervals", controller.getIntervalsByUser)
+	router.GET("/timeIntervals/:id", controller.getIntervalsByTask)
+	router.POST("/timeIntervals/:id", controller.AddInterval)
+	router.PUT("/timeIntervals/:id", controller.FinishInterval)
 }
 
-func (controller TimeIntervalController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	// controller.corsUseCase.DisableCors(&w, r) // TODO fix CORS
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
 	}
 
-	switch r.Method {
-	case "GET":
-		var jsonData []byte
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err == nil {
-			task, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(task)
+	items, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
 
-		} else {
-			err = nil
-			task, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, _ = json.Marshal(task)
+func (controller TimeIntervalController) AddInterval(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.intervalUseCase.AddInterval(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
+}
 
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "POST":
-		var jsonData []byte
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		var interval models.Interval
-		interval.TaskId = id
-		interval.UserId = *user.Id
-		interval.TimeStart = time.Now().Format(time.RFC3339)
-
-		newInterval, err := controller.intervalUseCase.AddInterval(interval, interval.UserId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err = json.Marshal(newInterval)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "PUT":
-		var jsonData []byte
-		idString := "-1" //TODO
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		interval, _ := controller.intervalUseCase.GetNotEndedInterval(id, *user.Id)
-		interval.TimeEnd = time.Now().Format(time.RFC3339)
-
-		err = controller.intervalUseCase.UpdateInterval(*interval, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err = json.Marshal(interval)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
+func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
 	}
 
+	if err := controller.intervalUseCase.FinishInterval(id, *user.Id); err != nil {
+		return // TODO add error message
+	}
+	c.String(http.StatusOK, "")
 }

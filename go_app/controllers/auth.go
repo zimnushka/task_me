@@ -1,81 +1,74 @@
 package controllers
 
 import (
-	"encoding/json"
-
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
-// ShowAccount godoc
-// @Summary      Show an account
-// @Description  get string by ID
-// @Tags         accounts
-// @Accept       json
-// @Produce      json
-// @Param        id   path      int  true  "Account ID"
-// @Success      200  {object}  model.Account
-// @Failure      400  {object}  httputil.HTTPError
-// @Failure      404  {object}  httputil.HTTPError
-// @Failure      500  {object}  httputil.HTTPError
-// @Router       /accounts/{id} [get]
+type loginParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
 type AuthController struct {
 	authUseCase usecases.AuthUseCase
-	corsUseCase usecases.CorsUseCase
-	models.Controller
 }
 
-func (controller AuthController) Init() models.Controller {
-	controller.Url = "/auth"
-	controller.RegisterController("/login", controller.loginHandler)
-	controller.RegisterController("/registration", controller.registrationHandler)
-	return controller.Controller
+func (controller AuthController) Init(router *gin.Engine) {
+	router.POST("/auth/login", controller.loginHandler)
+	router.POST("/auth/registration", controller.registrationHandler)
 }
 
-func (controller AuthController) registrationHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
-	if r.Method == "POST" {
-		var user models.User
-		err := json.NewDecoder(r.Body).Decode(&user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		user.Color = 4283658239
-		response, err := controller.authUseCase.Register(user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
+// @Summary		Register
+// @Description	Register new user
+// @ID				auth-register
+// @Tags Auth
+// @Accept			json
+// @Produce		json
+// @Param			new_user	body		models.User			true	"New User"
+// @Success		200		{string}	string			"apiKey"
+// @Router			/auth/registration [post]
+func (controller AuthController) registrationHandler(c *gin.Context) {
 
-		w.Write([]byte(response))
+	var newUser models.User
+
+	if err := c.BindJSON(&newUser); err != nil {
+		return // TODO add error message
 	}
 
-}
-func (controller AuthController) loginHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
-	if r.Method == "POST" {
-		type loginParams struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
-		}
-		var params loginParams
-		err := json.NewDecoder(r.Body).Decode(&params)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		response, err := controller.authUseCase.Login(params.Email, params.Password)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		w.Write([]byte(response))
+	newUser.Color = 4283658239
+	apiKey, err := controller.authUseCase.Register(newUser)
+	if err != nil {
+		return // TODO add error message
 	}
+
+	c.String(http.StatusCreated, apiKey)
+
+}
+
+// @Summary		Login
+// @Description	Login
+// @ID				auth-login
+// @Tags Auth
+// @Accept			json
+// @Produce		json
+// @Param			login_user	body		loginParams			true	"Login user"
+// @Success		200		{string}	string			"apiKey"
+// @Router			/auth/login [post]
+func (controller AuthController) loginHandler(c *gin.Context) {
+	var params loginParams
+
+	if err := c.BindJSON(&params); err != nil {
+		return // TODO add error message
+	}
+
+	apiKey, err := controller.authUseCase.Login(params.Email, params.Password)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.String(http.StatusCreated, apiKey)
 
 }

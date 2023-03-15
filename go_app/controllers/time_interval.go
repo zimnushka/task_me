@@ -1,13 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
-	"time"
-
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -15,103 +12,110 @@ import (
 type TimeIntervalController struct {
 	authUseCase     usecases.AuthUseCase
 	intervalUseCase usecases.TimeIntervalUseCase
-	corsUseCase     usecases.CorsUseCase
-	models.Controller
 }
 
-func (controller TimeIntervalController) Init() models.Controller {
-	controller.Url = "/timeIntervals/"
-	controller.RegisterController("", controller.taskHandler)
-	return controller.Controller
+func (controller TimeIntervalController) Init(router *gin.Engine) {
+	router.GET("/timeIntervals", controller.getIntervalsByUser)
+	router.GET("/timeIntervals/:id", controller.getIntervalsByTask)
+	router.POST("/timeIntervals/:id", controller.AddInterval)
+	router.PUT("/timeIntervals/:id", controller.FinishInterval)
 }
 
-func (controller TimeIntervalController) taskHandler(w http.ResponseWriter, r *http.Request) {
-	controller.corsUseCase.DisableCors(&w, r)
-	user, err := controller.authUseCase.CheckToken(r.Header.Get(models.HeaderAuth))
+// @Summary		Get intervals by task ID
+// @Description	Get intervals by task ID
+// @ID				intervals-get-by-task-id
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	[]models.Interval
+// @Router			/timeIntervals/{id} [get]
+func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	items, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+// @Summary		Get my intervals
+// @Description	Get my intervals
+// @ID				intervals-get-my
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	[]models.Interval
+// @Router			/timeIntervals [get]
+func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
 	}
 
-	switch r.Method {
-	case "GET":
-		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
-		id, err := strconv.Atoi(idString)
-		if err == nil {
-			task, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, err = json.Marshal(task)
+	items, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
 
-		} else {
-			err = nil
-			task, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			jsonData, err = json.Marshal(task)
+// @Summary		Start interval
+// @Description	Start interval
+// @ID				intervals-start
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.Interval
+// @Router			/timeIntervals/{id} [post]
+func (controller TimeIntervalController) AddInterval(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
+	}
+	item, err := controller.intervalUseCase.AddInterval(id, *user.Id)
+	if err != nil {
+		return // TODO add error message
+	}
+	c.IndentedJSON(http.StatusOK, item)
+}
 
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "POST":
-		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		var interval models.Interval
-		interval.TaskId = id
-		interval.UserId = *user.Id
-		interval.TimeStart = time.Now().Format(time.RFC3339)
-
-		newInterval, err := controller.intervalUseCase.AddInterval(interval, interval.UserId)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err = json.Marshal(newInterval)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
-	case "PUT":
-		var jsonData []byte
-		idString := strings.TrimPrefix(r.URL.Path, controller.Url)
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		interval, err := controller.intervalUseCase.GetNotEndedInterval(id, *user.Id)
-		interval.TimeEnd = time.Now().Format(time.RFC3339)
-
-		err = controller.intervalUseCase.UpdateInterval(*interval, *user.Id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		jsonData, err = json.Marshal(interval)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonData))
+// @Summary		Stop interval
+// @Description	Stop interval
+// @ID				intervals-stop
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.Interval
+// @Router			/timeIntervals/{id} [put]
+func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		return // TODO add error message
+	}
+	idString := c.Param("id")
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return // TODO add error message
 	}
 
+	if err := controller.intervalUseCase.FinishInterval(id, *user.Id); err != nil {
+		return // TODO add error message
+	}
+	c.String(http.StatusOK, "")
 }

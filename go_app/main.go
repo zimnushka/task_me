@@ -1,10 +1,12 @@
 package main
 
 import (
-	"net/http"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/zimnushka/task_me_go/go_app/controllers"
-	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
+	_ "github.com/zimnushka/task_me_go/go_app/docs"
 )
 
 // @title           TaskMe API
@@ -18,27 +20,43 @@ import (
 // @in header
 // @name Authorization
 
+// HealthCheck godoc
+// @Summary Show the status of server.
+// @Description get the status of server.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {string} "test"
+// @Router / [get]
+
 func main() {
-	controllers.AuthController{}.Init()
-	controllers.UserController{}.Init()
-	controllers.ProjectController{}.Init()
-	controllers.TaskController{}.Init()
-	controllers.TaskProjectController{}.Init()
-	controllers.ProjectMemberController{}.Init()
-	controllers.TaskMemberController{}.Init()
-	controllers.TimeIntervalController{}.Init()
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	router := gin.Default()
+	router.Use(CORSMiddleware())
+
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
+	controllers.AuthController{}.Init(router)
+	controllers.UserController{}.Init(router)
+	controllers.ProjectController{}.Init(router)
+	controllers.TaskController{}.Init(router)
+	controllers.TimeIntervalController{}.Init(router)
+
+	router.Run(":8080")
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	corsUseCase := usecases.CorsUseCase{}
-	corsUseCase.DisableCors(&w, r)
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
-	switch r.Method {
-	case "GET":
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
-
 }

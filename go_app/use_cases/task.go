@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"errors"
+	"time"
 
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
@@ -82,6 +83,7 @@ func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task,
 		return nil, errors.New("Title is empty")
 	}
 	task.Id = nil
+	task.StartDate = time.Now().Format(time.RFC3339)
 	return useCase.taskRepository.AddTask(task)
 }
 

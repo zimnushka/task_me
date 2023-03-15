@@ -1,15 +1,9 @@
 package models
 
-import (
-	"net/http"
-)
+import "github.com/gin-gonic/gin"
 
 const HeaderAuth = "Authorization"
 
-type Controller struct {
-	Url string
-}
-
-func (c *Controller) RegisterController(subUrl string, handlerFunc func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc(c.Url+subUrl, handlerFunc)
+type Controller interface {
+	Init(router *gin.Engine)
 }

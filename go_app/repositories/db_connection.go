@@ -18,5 +18,5 @@ func (TaskMeDB) GetDB() (*sql.DB, error) {
 
 	const debugUrl = "localhost:3306"
 
-	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, url, db))
+	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, debugUrl, db))
 }

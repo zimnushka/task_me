@@ -8,6 +8,11 @@ import (
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
+type loginParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type AuthController struct {
 	authUseCase usecases.AuthUseCase
 }
@@ -23,10 +28,9 @@ func (controller AuthController) Init(router *gin.Engine) {
 // @Tags Auth
 // @Accept			json
 // @Produce		json
-// @Param			some_id	path		int				true	"Some ID"
-// @Param			some_id	body		models.User			true	"Some ID"
+// @Param			new_user	body		models.User			true	"New User"
 // @Success		200		{string}	string			"apiKey"
-// @Router			/auth/registration [get]
+// @Router			/auth/registration [post]
 func (controller AuthController) registrationHandler(c *gin.Context) {
 
 	var newUser models.User
@@ -44,13 +48,17 @@ func (controller AuthController) registrationHandler(c *gin.Context) {
 	c.String(http.StatusCreated, apiKey)
 
 }
+
+// @Summary		Login
+// @Description	Login
+// @ID				auth-login
+// @Tags Auth
+// @Accept			json
+// @Produce		json
+// @Param			login_user	body		loginParams			true	"Login user"
+// @Success		200		{string}	string			"apiKey"
+// @Router			/auth/login [post]
 func (controller AuthController) loginHandler(c *gin.Context) {
-
-	type loginParams struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
 	var params loginParams
 
 	if err := c.BindJSON(&params); err != nil {

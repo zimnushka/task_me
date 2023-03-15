@@ -21,6 +21,15 @@ func (controller TimeIntervalController) Init(router *gin.Engine) {
 	router.PUT("/timeIntervals/:id", controller.FinishInterval)
 }
 
+// @Summary		Get intervals by task ID
+// @Description	Get intervals by task ID
+// @ID				intervals-get-by-task-id
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	[]models.Interval
+// @Router			/timeIntervals/{id} [get]
 func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -38,6 +47,14 @@ func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, items)
 }
 
+// @Summary		Get my intervals
+// @Description	Get my intervals
+// @ID				intervals-get-my
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	[]models.Interval
+// @Router			/timeIntervals [get]
 func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -51,6 +68,15 @@ func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, items)
 }
 
+// @Summary		Start interval
+// @Description	Start interval
+// @ID				intervals-start
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.Interval
+// @Router			/timeIntervals/{id} [post]
 func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -68,6 +94,15 @@ func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, item)
 }
 
+// @Summary		Stop interval
+// @Description	Stop interval
+// @ID				intervals-stop
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.Interval
+// @Router			/timeIntervals/{id} [put]
 func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {

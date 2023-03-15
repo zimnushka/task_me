@@ -1,5 +1,61 @@
 basePath: /
 definitions:
+  controllers.loginParams:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Interval:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      task_id:
+        type: integer
+      time_end:
+        type: string
+      time_start:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Project:
+    properties:
+      color:
+        type: integer
+      id:
+        type: integer
+      ownerId:
+        type: integer
+      title:
+        type: string
+    type: object
+  models.Task:
+    properties:
+      assigners:
+        items:
+          type: integer
+        type: array
+      cost:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      projectId:
+        type: integer
+      startDate:
+        type: string
+      statusId:
+        type: integer
+      stopDate:
+        type: string
+      title:
+        type: string
+    type: object
   models.User:
     properties:
       color:
@@ -22,21 +78,39 @@ info:
   title: TaskMe API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      operationId: auth-login
+      parameters:
+      - description: Login user
+        in: body
+        name: login_user
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.loginParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: apiKey
+          schema:
+            type: string
+      summary: Login
+      tags:
+      - Auth
   /auth/registration:
-    get:
+    post:
       consumes:
       - application/json
       description: Register new user
       operationId: auth-register
       parameters:
-      - description: Some ID
-        in: path
-        name: some_id
-        required: true
-        type: integer
-      - description: Some ID
+      - description: New User
         in: body
-        name: some_id
+        name: new_user
         required: true
         schema:
           $ref: '#/definitions/models.User'
@@ -50,6 +124,445 @@ paths:
       summary: Register
       tags:
       - Auth
+  /project:
+    get:
+      consumes:
+      - application/json
+      description: Get projects
+      operationId: project-get
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Project'
+            type: array
+      summary: Get projects
+      tags:
+      - Project
+    post:
+      consumes:
+      - application/json
+      description: Add project
+      operationId: project-add
+      parameters:
+      - description: New project
+        in: body
+        name: new_project
+        required: true
+        schema:
+          $ref: '#/definitions/models.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Project'
+      summary: Add project
+      tags:
+      - Project
+    put:
+      consumes:
+      - application/json
+      description: Edit project
+      operationId: project-edit
+      parameters:
+      - description: Edit project
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/models.Project'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Project'
+      summary: Edit project
+      tags:
+      - Project
+  /project/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project
+      operationId: project-delete
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Delete project
+      tags:
+      - Project
+    get:
+      consumes:
+      - application/json
+      description: Get project by ID
+      operationId: project-get-by-id
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Project'
+      summary: Get project by ID
+      tags:
+      - Project
+  /project/member/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get project members
+      operationId: project-get-members
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Get members
+      tags:
+      - Project
+    post:
+      consumes:
+      - application/json
+      description: Add project member
+      operationId: project-add-members
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: email new member
+        format: email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Add member
+      tags:
+      - Project
+    put:
+      consumes:
+      - application/json
+      description: Delete project members
+      operationId: project-delete-members
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User id for delete
+        in: query
+        name: userId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Delete member
+      tags:
+      - Project
+  /task:
+    get:
+      consumes:
+      - application/json
+      description: Get tasks
+      operationId: task-get
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+      summary: Get tasks
+      tags:
+      - Task
+    post:
+      consumes:
+      - application/json
+      description: Add task
+      operationId: task-add
+      parameters:
+      - description: New task
+        in: body
+        name: new_task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+      summary: Add task
+      tags:
+      - Task
+    put:
+      consumes:
+      - application/json
+      description: Edit task
+      operationId: task-edit
+      parameters:
+      - description: Edit task
+        in: body
+        name: edit_task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+      summary: Edit task
+      tags:
+      - Task
+  /task/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete task
+      operationId: task-delete
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Delete task
+      tags:
+      - Task
+    get:
+      consumes:
+      - application/json
+      description: Get task by ID
+      operationId: task-get-by-id
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+      summary: Get task by ID
+      tags:
+      - Task
+  /task/member/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get task members
+      operationId: task-get-members
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Get task members
+      tags:
+      - Task
+    post:
+      consumes:
+      - application/json
+      description: Add task members
+      operationId: task-add-members
+      parameters:
+      - description: Update members list
+        in: body
+        name: update_members_list
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/models.User'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Add task members
+      tags:
+      - Task
+  /task/project/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get task by project
+      operationId: task-get-by-project
+      parameters:
+      - description: Project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+      summary: Get task by project
+      tags:
+      - Task
+  /timeIntervals:
+    get:
+      consumes:
+      - application/json
+      description: Get my intervals
+      operationId: intervals-get-my
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Interval'
+            type: array
+      summary: Get my intervals
+      tags:
+      - Intervals
+  /timeIntervals/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get intervals by task ID
+      operationId: intervals-get-by-task-id
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Interval'
+            type: array
+      summary: Get intervals by task ID
+      tags:
+      - Intervals
+    post:
+      consumes:
+      - application/json
+      description: Start interval
+      operationId: intervals-start
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Interval'
+      summary: Start interval
+      tags:
+      - Intervals
+    put:
+      consumes:
+      - application/json
+      description: Stop interval
+      operationId: intervals-stop
+      parameters:
+      - description: Task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Interval'
+      summary: Stop interval
+      tags:
+      - Intervals
 securityDefinitions:
   ApiKeyAuth:
     in: header

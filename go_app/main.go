@@ -33,15 +33,14 @@ func main() {
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
 	controllers.AuthController{}.Init(router)
 	controllers.UserController{}.Init(router)
 	controllers.ProjectController{}.Init(router)
 	controllers.TaskController{}.Init(router)
 	controllers.TimeIntervalController{}.Init(router)
-
-	// router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	router.Run(":8080")
 }

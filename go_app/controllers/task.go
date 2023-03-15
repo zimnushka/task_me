@@ -27,6 +27,15 @@ func (controller TaskController) Init(router *gin.Engine) {
 	router.POST("/task/member/:id", controller.editTaskMembersList)
 }
 
+// @Summary		Get task by ID
+// @Description	Get task by ID
+// @ID				task-get-by-id
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.Task
+// @Router			/task/{id} [get]
 func (controller TaskController) getTaskById(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -44,6 +53,14 @@ func (controller TaskController) getTaskById(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, item)
 }
 
+// @Summary		Get tasks
+// @Description	Get tasks
+// @ID				task-get
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	[]models.Task
+// @Router			/task [get]
 func (controller TaskController) getUserTasks(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -56,6 +73,15 @@ func (controller TaskController) getUserTasks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, items)
 }
 
+// @Summary		Add task
+// @Description	Add task
+// @ID				task-add
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			new_task	body		models.Task			true	"New task"
+// @Success		200		{object}	models.Task
+// @Router			/task [post]
 func (controller TaskController) addTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -73,6 +99,15 @@ func (controller TaskController) addTask(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, newItem)
 }
 
+// @Summary		Edit task
+// @Description	Edit task
+// @ID				task-edit
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			edit_task	body		models.Task			true	"Edit task"
+// @Success		200		{object}	models.Task
+// @Router			/task [put]
 func (controller TaskController) editTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -89,6 +124,15 @@ func (controller TaskController) editTask(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, item)
 }
 
+// @Summary		Delete task
+// @Description	Delete task
+// @ID				task-delete
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{string}	string
+// @Router			/task/{id} [delete]
 func (controller TaskController) deleteTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -106,6 +150,15 @@ func (controller TaskController) deleteTask(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
+// @Summary		Get task members
+// @Description	Get task members
+// @ID				task-get-members
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Task id"
+// @Success		200		{object}	models.User
+// @Router			/task/member/{id} [get]
 func (controller TaskController) getTaskMembers(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -123,6 +176,15 @@ func (controller TaskController) getTaskMembers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, items)
 }
 
+// @Summary		Add task members
+// @Description	Add task members
+// @ID				task-add-members
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			update_members_list	body		[]models.User			true	"Update members list"
+// @Success		200		{string}	string
+// @Router			/task/member/{id} [post]
 func (controller TaskController) editTaskMembersList(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -144,6 +206,15 @@ func (controller TaskController) editTaskMembersList(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
+// @Summary		Get task by project
+// @Description	Get task by project
+// @ID				task-get-by-project
+// @Tags Task
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Project id"
+// @Success		200		{object}	[]models.Task
+// @Router			/task/project/{id} [get]
 func (controller TaskController) getTaskByProject(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {

@@ -33,16 +33,22 @@ func (controller TimeIntervalController) Init(router *gin.Engine) {
 func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	items, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -58,12 +64,16 @@ func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	items, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -80,16 +90,22 @@ func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
 func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	item, err := controller.intervalUseCase.AddInterval(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.IndentedJSON(http.StatusOK, item)
 }
@@ -106,16 +122,22 @@ func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	if err := controller.intervalUseCase.FinishInterval(id, *user.Id); err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.String(http.StatusOK, "")
 }

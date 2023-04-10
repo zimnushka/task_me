@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
@@ -20,17 +21,17 @@ type AuthUseCase struct {
 func (useCase *AuthUseCase) CheckToken(token string) (*models.User, error) {
 	data, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(app_errors.ERR_Wrong_auth)
 	}
 	words := strings.Split(string(data), "-")
 	if words[0] == salt {
 		id, err := strconv.Atoi(words[len(words)-1])
 		if err != nil {
-			return nil, err
+			return nil, errors.New(app_errors.ERR_Wrong_auth)
 		}
 		return useCase.userRepository.GetUserFromId(id)
 	}
-	return nil, errors.New("wrong auth")
+	return nil, errors.New(app_errors.ERR_Wrong_auth)
 }
 
 func (useCase *AuthUseCase) createToken(user models.User) string {
@@ -42,19 +43,19 @@ func (useCase *AuthUseCase) createToken(user models.User) string {
 
 func (useCase *AuthUseCase) Register(user models.User) (string, error) {
 	if user.Email == "" || user.Password == "" {
-		return "", errors.New("Password or email is empty")
+		return "", errors.New(app_errors.ERR_Empty_field)
 	}
 	user.Id = nil
 	userWithEmail, _ := useCase.userRepository.GetUserFromEmail(user.Email)
 	if userWithEmail != nil {
-		return "", errors.New("User with this email was created")
+		return "", errors.New(app_errors.ERR_User_already_register)
 	}
 	newUser, err := useCase.userRepository.AddUser(user)
 	return useCase.createToken(*newUser), err
 }
 func (useCase *AuthUseCase) Login(email, password string) (string, error) {
 	if email == "" || password == "" {
-		return "", errors.New("Password or email is empty")
+		return "", errors.New(app_errors.ERR_Empty_field)
 	}
 	user, err := useCase.userRepository.GetUserFromEmail(email)
 
@@ -62,7 +63,7 @@ func (useCase *AuthUseCase) Login(email, password string) (string, error) {
 		return "", err
 	}
 	if user.Password != password {
-		return "", errors.New("User with this parametrs not found")
+		return "", errors.New(app_errors.ERR_Not_found)
 	}
 	return useCase.createToken(*user), nil
 

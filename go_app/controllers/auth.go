@@ -36,13 +36,19 @@ func (controller AuthController) registrationHandler(c *gin.Context) {
 	var newUser models.User
 
 	if err := c.BindJSON(&newUser); err != nil {
-		return // TODO add error message
+
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+
 	}
 
 	newUser.Color = 4283658239
 	apiKey, err := controller.authUseCase.Register(newUser)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	c.String(http.StatusCreated, apiKey)
@@ -62,12 +68,16 @@ func (controller AuthController) loginHandler(c *gin.Context) {
 	var params loginParams
 
 	if err := c.BindJSON(&params); err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	apiKey, err := controller.authUseCase.Login(params.Email, params.Password)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.String(http.StatusCreated, apiKey)
 

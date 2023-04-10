@@ -39,16 +39,22 @@ func (controller ProjectController) Init(router *gin.Engine) {
 func (controller ProjectController) getProjectMembers(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	items, err := controller.projectUseCase.GetProjectUsers(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		c.Error(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }

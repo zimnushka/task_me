@@ -3,6 +3,7 @@ package usecases
 import (
 	"errors"
 
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
@@ -13,14 +14,11 @@ type ProjectUseCase struct {
 }
 
 func (useCase *ProjectUseCase) GetProjectById(id, userId int) (*models.Project, error) {
-	access, err := useCase.CheckUserHaveProject(id, userId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(id, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		return useCase.projectRepository.GetProjectFromId(id)
-	}
-	return nil, errors.New("Forbiden")
+	return useCase.projectRepository.GetProjectFromId(id)
+
 }
 
 func (useCase *ProjectUseCase) GetAllProjects(userId int) ([]models.Project, error) {
@@ -28,19 +26,16 @@ func (useCase *ProjectUseCase) GetAllProjects(userId int) ([]models.Project, err
 }
 
 func (useCase *ProjectUseCase) GetProjectUsers(projectId, userId int) ([]models.User, error) {
-	access, err := useCase.CheckUserHaveProject(projectId, userId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(projectId, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		return useCase.projectUserRepository.GetUsersByProject(projectId)
-	}
-	return nil, errors.New("Forbiden")
+	return useCase.projectUserRepository.GetUsersByProject(projectId)
+
 }
 
 func (useCase *ProjectUseCase) AddProject(project models.Project, userId int) (*models.Project, error) {
 	if project.Title == "" {
-		return nil, errors.New("Title is empty")
+		return nil, errors.New(app_errors.ERR_Empty_field)
 	}
 	project.Id = nil
 	newProject, err := useCase.projectRepository.AddProject(project, userId)
@@ -52,60 +47,48 @@ func (useCase *ProjectUseCase) AddProject(project models.Project, userId int) (*
 }
 
 func (useCase *ProjectUseCase) AddMemberToProject(projectId, userId, userRequestId int) error {
-	access, err := useCase.CheckUserHaveProject(projectId, userRequestId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(projectId, userRequestId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.projectUserRepository.AddLink(projectId, userId)
-	}
-	return errors.New("Forbiden")
+	return useCase.projectUserRepository.AddLink(projectId, userId)
+
 }
 
 func (useCase *ProjectUseCase) UpdateProject(project models.Project, userId int) error {
-	access, err := useCase.CheckUserHaveProject(*project.Id, userId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(*project.Id, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.projectRepository.UpdateProject(project)
-	}
-	return errors.New("Forbiden")
+	return useCase.projectRepository.UpdateProject(project)
+
 }
 
 func (useCase *ProjectUseCase) DeleteProject(id, userId int) error {
-	access, err := useCase.CheckUserHaveProject(id, userId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(id, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.projectRepository.DeleteProject(id)
-	}
-	return errors.New("Forbiden")
+	return useCase.projectRepository.DeleteProject(id)
+
 }
 
 func (useCase *ProjectUseCase) DeleteMemberFromProject(projectId, userId, userRequestId int) error {
-	access, err := useCase.CheckUserHaveProject(projectId, userId)
-	if err != nil {
+	if err := useCase.CheckUserHaveProject(projectId, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.projectUserRepository.DeleteLink(projectId, userId)
-	}
-	return errors.New("Forbiden")
+	return useCase.projectUserRepository.DeleteLink(projectId, userId)
+
 }
 
-func (useCase *ProjectUseCase) CheckUserHaveProject(projectId, userId int) (bool, error) {
+func (useCase *ProjectUseCase) CheckUserHaveProject(projectId, userId int) error {
 	projects, err := useCase.projectUserRepository.GetProjectsByUser(userId)
 	if err != nil {
-		return false, err
+		return err
 	}
 	var id int
 	for _, project := range projects {
 		id = *project.Id
 		if id == projectId {
-			return true, nil
+			return nil
 		}
 	}
-	return false, nil
+	return errors.New(app_errors.ERR_Forbiden)
 }

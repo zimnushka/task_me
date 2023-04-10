@@ -3,6 +3,7 @@ package usecases
 import (
 	"errors"
 
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
@@ -26,7 +27,7 @@ func (useCase *UserUseCase) AddUser(user models.User) (*models.User, error) {
 	user.Id = nil
 	userWithEmail, _ := useCase.userRepository.GetUserFromEmail(user.Email)
 	if userWithEmail != nil {
-		return nil, errors.New("User with this email was created")
+		return nil, errors.New(app_errors.ERR_User_already_register)
 	}
 
 	return useCase.userRepository.AddUser(user)
@@ -34,7 +35,7 @@ func (useCase *UserUseCase) AddUser(user models.User) (*models.User, error) {
 func (useCase *UserUseCase) UpdateUser(user models.User) (*models.User, error) {
 	if user.Password == "" {
 		userWithPass, _ := useCase.userRepository.GetUserFromId(*user.Id)
-		user.Password = *&userWithPass.Password
+		user.Password = userWithPass.Password
 	}
 
 	err := useCase.userRepository.UpdateUser(user)

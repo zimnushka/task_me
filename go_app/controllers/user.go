@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -42,7 +42,7 @@ func (controller UserController) getUserById(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	item, err := controller.userUseCase.GetUserById(id)
@@ -75,7 +75,7 @@ func (controller UserController) addUser(c *gin.Context) {
 	}
 	var item models.User
 	if err := c.BindJSON(&item); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	newItem, err := controller.userUseCase.AddUser(item)
@@ -95,7 +95,7 @@ func (controller UserController) editUser(c *gin.Context) {
 	}
 	var item models.User
 	if err := c.BindJSON(&item); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	if _, err := controller.userUseCase.UpdateUser(item, *user.Id); err != nil {
@@ -115,7 +115,7 @@ func (controller UserController) deleteUser(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	if err = controller.userUseCase.DeleteUser(id, *user.Id); err != nil {

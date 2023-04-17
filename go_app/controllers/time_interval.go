@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -40,7 +40,7 @@ func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	items, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
@@ -92,7 +92,7 @@ func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	item, err := controller.intervalUseCase.AddInterval(id, *user.Id)
@@ -121,7 +121,7 @@ func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 

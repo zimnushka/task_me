@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 )
 
@@ -36,7 +36,7 @@ func (intervalRepository IntervalRepository) GetById(id int) (*models.Interval, 
 		return &item, err
 	}
 
-	return nil, errors.New(app_errors.ERR_Unexpected_repository_error)
+	return nil, errors.New(app.ERR_Unexpected_repository_error)
 }
 
 func (intervalRepository IntervalRepository) GetNotEndedInterval(taskId, userId int) (*models.Interval, error) {
@@ -62,7 +62,7 @@ func (intervalRepository IntervalRepository) GetNotEndedInterval(taskId, userId 
 		return &item, err
 	}
 
-	return nil, errors.New(app_errors.ERR_Unexpected_repository_error)
+	return nil, errors.New(app.ERR_Unexpected_repository_error)
 }
 
 func (intervalRepository IntervalRepository) GetByTaskId(id int) ([]models.Interval, error) {

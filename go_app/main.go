@@ -5,6 +5,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/controllers"
 	_ "github.com/zimnushka/task_me_go/go_app/docs"
 )
@@ -30,6 +31,8 @@ import (
 // @Router / [get]
 
 func main() {
+	app.SetConfig(app.DebugConfig)
+
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 

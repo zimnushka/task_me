@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 )
 
@@ -35,7 +35,7 @@ func (taskRepository TaskRepository) GetTaskFromId(id int) (*models.Task, error)
 		return &item, nil
 	}
 
-	return nil, errors.New(app_errors.ERR_Unexpected_repository_error)
+	return nil, errors.New(app.ERR_Unexpected_repository_error)
 }
 
 func (taskRepository TaskRepository) GetTasksFromProject(projectId int) ([]models.Task, error) {

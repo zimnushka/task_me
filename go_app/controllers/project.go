@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -46,7 +46,7 @@ func (controller ProjectController) getProjectMembers(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	items, err := controller.projectUseCase.GetProjectUsers(id, *user.Id)
@@ -76,7 +76,7 @@ func (controller ProjectController) addProjectMember(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	email := c.Query("email")
@@ -114,14 +114,14 @@ func (controller ProjectController) deleteProjectMember(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 
 	memberId, strToIntErr := strconv.Atoi(c.Query("userId"))
 
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 
@@ -155,7 +155,7 @@ func (controller ProjectController) getProjectById(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	item, err := controller.projectUseCase.GetProjectById(id, *user.Id)
@@ -206,7 +206,7 @@ func (controller ProjectController) createProject(c *gin.Context) {
 
 	var project models.Project
 	if err := c.BindJSON(&project); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
@@ -235,7 +235,7 @@ func (controller ProjectController) editProject(c *gin.Context) {
 	var project models.Project
 
 	if err := c.BindJSON(&project); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	if err := controller.projectUseCase.UpdateProject(project, *user.Id); err != nil {
@@ -264,7 +264,7 @@ func (controller ProjectController) deleteProject(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	if err = controller.projectUseCase.DeleteProject(id, *user.Id); err != nil {

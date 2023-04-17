@@ -1,4 +1,4 @@
-package app_errors
+package app
 
 import (
 	"errors"
@@ -12,14 +12,14 @@ type AppError struct {
 	StatusCode int    `json:"statusCode"`
 }
 
-func New(statusCode int, message string) *AppError {
+func NewError(statusCode int, message string) *AppError {
 	return &AppError{
 		Message:    message,
 		StatusCode: statusCode,
 	}
 }
 
-func FromError(err error) *AppError {
+func AppErrorByError(err error) *AppError {
 	if err != nil {
 		return nil
 	}

@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zimnushka/task_me_go/go_app/app_errors"
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -46,7 +46,7 @@ func (controller TaskController) getTaskById(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	item, err := controller.taskUseCase.GetTaskById(id, *user.Id)
@@ -96,7 +96,7 @@ func (controller TaskController) addTask(c *gin.Context) {
 	}
 	var item models.Task
 	if err := c.BindJSON(&item); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	newItem, err := controller.taskUseCase.AddTask(item, *user.Id)
@@ -125,7 +125,7 @@ func (controller TaskController) editTask(c *gin.Context) {
 	}
 	var item models.Task
 	if err := c.BindJSON(&item); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	if err := controller.taskUseCase.UpdateTask(item, *user.Id); err != nil {
@@ -154,7 +154,7 @@ func (controller TaskController) deleteTask(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	if err = controller.taskUseCase.DeleteTask(id, *user.Id); err != nil {
@@ -183,7 +183,7 @@ func (controller TaskController) getTaskMembers(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	items, err := controller.taskUseCase.GetMembers(id, *user.Id)
@@ -212,12 +212,12 @@ func (controller TaskController) editTaskMembersList(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	var items []models.User
 	if err := c.BindJSON(&items); err != nil {
-		app_errors.FromError(err).Call(c)
+		app.AppErrorByError(err).Call(c)
 		return
 	}
 	err = controller.taskUseCase.UpdateMembersList(id, items, *user.Id)
@@ -246,7 +246,7 @@ func (controller TaskController) getTaskByProject(c *gin.Context) {
 	idString := c.Param("id")
 	id, strToIntErr := strconv.Atoi(idString)
 	if strToIntErr != nil {
-		app_errors.FromError(strToIntErr).Call(c)
+		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
 	item, err := controller.taskUseCase.GetTaskByProjectId(id, *user.Id)

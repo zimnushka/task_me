@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -26,7 +27,8 @@ func (controller UserController) Init(router *gin.Engine) {
 func (controller UserController) getUserMe(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, user)
 }
@@ -34,16 +36,19 @@ func (controller UserController) getUserMe(c *gin.Context) {
 func (controller UserController) getUserById(c *gin.Context) {
 	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	item, err := controller.userUseCase.GetUserById(id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, item)
 }
@@ -51,11 +56,13 @@ func (controller UserController) getUserById(c *gin.Context) {
 func (controller UserController) getUsers(c *gin.Context) {
 	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	items, err := controller.userUseCase.GetAllUsers()
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -63,15 +70,18 @@ func (controller UserController) getUsers(c *gin.Context) {
 func (controller UserController) addUser(c *gin.Context) {
 	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	var item models.User
 	if err := c.BindJSON(&item); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	newItem, err := controller.userUseCase.AddUser(item)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, newItem)
@@ -80,14 +90,17 @@ func (controller UserController) addUser(c *gin.Context) {
 func (controller UserController) editUser(c *gin.Context) {
 	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	var item models.User
 	if err := c.BindJSON(&item); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	if _, err := controller.userUseCase.UpdateUser(item); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, item)
@@ -96,15 +109,18 @@ func (controller UserController) editUser(c *gin.Context) {
 func (controller UserController) deleteUser(c *gin.Context) {
 	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	if err = controller.userUseCase.DeleteUser(id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.String(http.StatusOK, "")

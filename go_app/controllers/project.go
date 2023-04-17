@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -39,21 +40,18 @@ func (controller ProjectController) Init(router *gin.Engine) {
 func (controller ProjectController) getProjectMembers(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		err.Call(c)
 		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
 		return
 	}
 	items, err := controller.projectUseCase.GetProjectUsers(id, *user.Id)
 	if err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		err.Call(c)
 		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
@@ -72,23 +70,27 @@ func (controller ProjectController) getProjectMembers(c *gin.Context) {
 func (controller ProjectController) addProjectMember(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	email := c.Query("email")
 
 	member, err := controller.userUseCase.GetUserByEmail(email)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	err = controller.projectUseCase.AddMemberToProject(id, *member.Id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.String(http.StatusOK, "")
 }
@@ -106,22 +108,31 @@ func (controller ProjectController) addProjectMember(c *gin.Context) {
 func (controller ProjectController) deleteProjectMember(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 
-	memberId, err := strconv.Atoi(c.Query("userId"))
+	memberId, strToIntErr := strconv.Atoi(c.Query("userId"))
+
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
+	}
 
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	if err = controller.projectUseCase.DeleteMemberFromProject(id, memberId, *user.Id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.String(http.StatusOK, "")
 }
@@ -138,16 +149,19 @@ func (controller ProjectController) deleteProjectMember(c *gin.Context) {
 func (controller ProjectController) getProjectById(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	item, err := controller.projectUseCase.GetProjectById(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, item)
 }
@@ -163,11 +177,13 @@ func (controller ProjectController) getProjectById(c *gin.Context) {
 func (controller ProjectController) getProjects(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	items, err := controller.projectUseCase.GetAllProjects(*user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -184,16 +200,19 @@ func (controller ProjectController) getProjects(c *gin.Context) {
 func (controller ProjectController) createProject(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	var project models.Project
 	if err := c.BindJSON(&project); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	newproject, err := controller.projectUseCase.AddProject(project, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, *newproject)
 }
@@ -210,14 +229,18 @@ func (controller ProjectController) createProject(c *gin.Context) {
 func (controller ProjectController) editProject(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	var project models.Project
+
 	if err := c.BindJSON(&project); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	if err := controller.projectUseCase.UpdateProject(project, *user.Id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, project)
@@ -235,15 +258,18 @@ func (controller ProjectController) editProject(c *gin.Context) {
 func (controller ProjectController) deleteProject(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	if err = controller.projectUseCase.DeleteProject(id, *user.Id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.String(http.StatusOK, "")

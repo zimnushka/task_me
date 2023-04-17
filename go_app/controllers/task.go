@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/zimnushka/task_me_go/go_app/app_errors"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
@@ -39,16 +40,19 @@ func (controller TaskController) Init(router *gin.Engine) {
 func (controller TaskController) getTaskById(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	item, err := controller.taskUseCase.GetTaskById(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, item)
 }
@@ -64,11 +68,13 @@ func (controller TaskController) getTaskById(c *gin.Context) {
 func (controller TaskController) getUserTasks(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	items, err := controller.taskUseCase.GetAllTasks(*user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -85,15 +91,18 @@ func (controller TaskController) getUserTasks(c *gin.Context) {
 func (controller TaskController) addTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	var item models.Task
 	if err := c.BindJSON(&item); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	newItem, err := controller.taskUseCase.AddTask(item, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, newItem)
@@ -111,14 +120,17 @@ func (controller TaskController) addTask(c *gin.Context) {
 func (controller TaskController) editTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	var item models.Task
 	if err := c.BindJSON(&item); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	if err := controller.taskUseCase.UpdateTask(item, *user.Id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, item)
@@ -136,15 +148,18 @@ func (controller TaskController) editTask(c *gin.Context) {
 func (controller TaskController) deleteTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	if err = controller.taskUseCase.DeleteTask(id, *user.Id); err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 
 	c.String(http.StatusOK, "")
@@ -162,16 +177,19 @@ func (controller TaskController) deleteTask(c *gin.Context) {
 func (controller TaskController) getTaskMembers(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	items, err := controller.taskUseCase.GetMembers(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, items)
 }
@@ -188,20 +206,24 @@ func (controller TaskController) getTaskMembers(c *gin.Context) {
 func (controller TaskController) editTaskMembersList(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	var items []models.User
 	if err := c.BindJSON(&items); err != nil {
-		return // TODO add error message
+		app_errors.FromError(err).Call(c)
+		return
 	}
 	err = controller.taskUseCase.UpdateMembersList(id, items, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.String(http.StatusOK, "")
 }
@@ -218,16 +240,19 @@ func (controller TaskController) editTaskMembersList(c *gin.Context) {
 func (controller TaskController) getTaskByProject(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	idString := c.Param("id")
-	id, err := strconv.Atoi(idString)
-	if err != nil {
-		return // TODO add error message
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app_errors.FromError(strToIntErr).Call(c)
+		return
 	}
 	item, err := controller.taskUseCase.GetTaskByProjectId(id, *user.Id)
 	if err != nil {
-		return // TODO add error message
+		err.Call(c)
+		return
 	}
 	c.IndentedJSON(http.StatusOK, item)
 }

@@ -36,7 +36,6 @@ func (controller AuthController) registrationHandler(c *gin.Context) {
 	var newUser models.User
 
 	if err := c.BindJSON(&newUser); err != nil {
-
 		c.Error(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
@@ -46,8 +45,7 @@ func (controller AuthController) registrationHandler(c *gin.Context) {
 	newUser.Color = 4283658239
 	apiKey, err := controller.authUseCase.Register(newUser)
 	if err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		err.Call(c)
 		return
 	}
 
@@ -75,8 +73,7 @@ func (controller AuthController) loginHandler(c *gin.Context) {
 
 	apiKey, err := controller.authUseCase.Login(params.Email, params.Password)
 	if err != nil {
-		c.Error(err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		err.Call(c)
 		return
 	}
 	c.String(http.StatusCreated, apiKey)

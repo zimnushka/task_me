@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -18,20 +18,24 @@ type AuthUseCase struct {
 	userRepository repositories.UserRepository
 }
 
-func (useCase *AuthUseCase) CheckToken(token string) (*models.User, error) {
+func (useCase *AuthUseCase) CheckToken(token string) (*models.User, *app_errors.AppError) {
 	data, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
-		return nil, errors.New(app_errors.ERR_Wrong_auth)
+		return nil, app_errors.New(http.StatusInternalServerError, app_errors.ERR_Wrong_auth)
 	}
 	words := strings.Split(string(data), "-")
 	if words[0] == salt {
 		id, err := strconv.Atoi(words[len(words)-1])
 		if err != nil {
-			return nil, errors.New(app_errors.ERR_Wrong_auth)
+			return nil, app_errors.New(http.StatusInternalServerError, app_errors.ERR_Wrong_auth)
 		}
-		return useCase.userRepository.GetUserFromId(id)
+		data, err := useCase.userRepository.GetUserFromId(id)
+		if err != nil {
+			return nil, app_errors.New(http.StatusNotFound, app_errors.ERR_Wrong_auth)
+		}
+		return data, nil
 	}
-	return nil, errors.New(app_errors.ERR_Wrong_auth)
+	return nil, app_errors.New(http.StatusNotFound, app_errors.ERR_Wrong_auth)
 }
 
 func (useCase *AuthUseCase) createToken(user models.User) string {
@@ -41,29 +45,29 @@ func (useCase *AuthUseCase) createToken(user models.User) string {
 
 }
 
-func (useCase *AuthUseCase) Register(user models.User) (string, error) {
+func (useCase *AuthUseCase) Register(user models.User) (string, *app_errors.AppError) {
 	if user.Email == "" || user.Password == "" {
-		return "", errors.New(app_errors.ERR_Empty_field)
+		return "", app_errors.New(http.StatusNotFound, app_errors.ERR_Empty_field)
 	}
 	user.Id = nil
 	userWithEmail, _ := useCase.userRepository.GetUserFromEmail(user.Email)
 	if userWithEmail != nil {
-		return "", errors.New(app_errors.ERR_User_already_register)
+		return "", app_errors.New(http.StatusConflict, app_errors.ERR_User_already_register)
 	}
 	newUser, err := useCase.userRepository.AddUser(user)
-	return useCase.createToken(*newUser), err
+	return useCase.createToken(*newUser), app_errors.FromError(err)
 }
-func (useCase *AuthUseCase) Login(email, password string) (string, error) {
+func (useCase *AuthUseCase) Login(email, password string) (string, *app_errors.AppError) {
 	if email == "" || password == "" {
-		return "", errors.New(app_errors.ERR_Empty_field)
+		return "", app_errors.New(http.StatusNotFound, app_errors.ERR_Empty_field)
 	}
 	user, err := useCase.userRepository.GetUserFromEmail(email)
 
 	if err != nil {
-		return "", err
+		return "", app_errors.FromError(err)
 	}
 	if user.Password != password {
-		return "", errors.New(app_errors.ERR_Not_found)
+		return "", app_errors.New(http.StatusNotFound, app_errors.ERR_Not_found)
 	}
 	return useCase.createToken(*user), nil
 

@@ -11,26 +11,25 @@ import (
 
 type TimeIntervalUseCase struct {
 	intervalRepository repositories.IntervalRepository
-	userRepository     repositories.UserRepository
+	taskRepository     repositories.TaskRepository
 
 	taskUseCase    TaskUseCase
 	projectUseCase ProjectUseCase
 }
 
-func (useCase *TimeIntervalUseCase) AddInterval(taskId, userId int) (*models.Interval, *app.AppError) {
-	if err := useCase.taskUseCase.CheckUserHaveTask(taskId, userId); err != nil {
-		return nil, err
-	}
-
-	userNull, err := useCase.userRepository.GetUserFromId(userId)
+func (useCase *TimeIntervalUseCase) AddInterval(taskId int, user models.User) (*models.Interval, *app.AppError) {
+	taskData, err := useCase.taskRepository.GetTaskFromId(taskId)
 	if err != nil {
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
+	task := *taskData
 
-	var user models.User = *userNull
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(taskId, *user.Id); err != nil {
+		return nil, err
+	}
 
 	var item models.Interval
-	item.TaskId = taskId
+	item.Task = task.ToDTO()
 	item.User = user.ToDTO()
 	item.TimeStart = time.Now().Format(time.RFC3339)
 	data, err := useCase.intervalRepository.Add(item)
@@ -46,7 +45,7 @@ func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Int
 	if err != nil {
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
-	if err := useCase.taskUseCase.CheckUserHaveTask(interval.TaskId, userId); err != nil {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(*interval.Task.Id, userId); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +53,7 @@ func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Int
 }
 
 func (useCase *TimeIntervalUseCase) GetIntervalsByTask(id, userId int) ([]models.Interval, *app.AppError) {
-	if err := useCase.taskUseCase.CheckUserHaveTask(id, userId); err != nil {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return nil, err
 	}
 	data, err := useCase.intervalRepository.GetByTaskId(id)
@@ -84,14 +83,14 @@ func (useCase *TimeIntervalUseCase) GetIntervalsByUser(userId int) ([]models.Int
 }
 
 func (useCase *TimeIntervalUseCase) UpdateInterval(item models.Interval, userId int) *app.AppError {
-	if err := useCase.taskUseCase.CheckUserHaveTask(item.TaskId, userId); err != nil {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(*item.Task.Id, userId); err != nil {
 		return err
 	}
 	return app.AppErrorByError(useCase.intervalRepository.Update(item))
 }
 
 func (useCase *TimeIntervalUseCase) FinishInterval(taskId, userId int) *app.AppError {
-	if err := useCase.taskUseCase.CheckUserHaveTask(taskId, userId); err != nil {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(taskId, userId); err != nil {
 		return err
 	} else {
 		item, err := useCase.intervalRepository.GetNotEndedInterval(taskId, userId)

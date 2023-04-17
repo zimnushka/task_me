@@ -116,6 +116,10 @@
 # GET http://localhost:8080/timeIntervals/task/5
 # Authorization: NzlkYmViODE2NTgyLTE=
 
+# # GET INTERVALS MY
+# GET http://localhost:8080/timeIntervals
+# Authorization: NzlkYmViODE2NTgyLTE=
+
 # # GET INTERVALS BY PROJECT
 # GET http://localhost:8080/timeIntervals/project/29
 # Authorization: NzlkYmViODE2NTgyLTE=

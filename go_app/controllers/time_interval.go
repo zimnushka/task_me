@@ -125,7 +125,7 @@ func (controller TimeIntervalController) AddInterval(c *gin.Context) {
 		app.AppErrorByError(strToIntErr).Call(c)
 		return
 	}
-	item, err := controller.intervalUseCase.AddInterval(id, *user.Id)
+	item, err := controller.intervalUseCase.AddInterval(id, *user)
 	if err != nil {
 		err.Call(c)
 		return

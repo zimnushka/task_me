@@ -20,7 +20,7 @@ func NewError(statusCode int, message string) *AppError {
 }
 
 func AppErrorByError(err error) *AppError {
-	if err != nil {
+	if err == nil {
 		return nil
 	}
 	return &AppError{

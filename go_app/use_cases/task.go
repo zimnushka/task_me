@@ -17,7 +17,7 @@ type TaskUseCase struct {
 }
 
 func (useCase *TaskUseCase) GetMembers(id, userId int) ([]models.User, *app.AppError) {
-	if err := useCase.CheckUserHaveTask(id, userId); err != nil {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return nil, err
 	}
 	data, err := useCase.taskUserRepository.GetUsersByTask(id)
@@ -28,7 +28,7 @@ func (useCase *TaskUseCase) GetMembers(id, userId int) ([]models.User, *app.AppE
 }
 
 func (useCase *TaskUseCase) UpdateMembersList(id int, users []models.User, userId int) *app.AppError {
-	if err := useCase.CheckUserHaveTask(id, userId); err != nil {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return err
 	}
 
@@ -92,7 +92,7 @@ func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task,
 }
 
 func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) *app.AppError {
-	if err := useCase.CheckUserHaveTask(*item.Id, userId); err != nil {
+	if err := useCase.CheckUserHaveTaskById(*item.Id, userId); err != nil {
 		return err
 	}
 	return app.AppErrorByError(useCase.taskRepository.UpdateTask(item))
@@ -100,7 +100,7 @@ func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) *app.AppErr
 }
 
 func (useCase *TaskUseCase) DeleteTask(id, userId int) *app.AppError {
-	if err := useCase.CheckUserHaveTask(id, userId); err != nil {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return err
 	}
 	return app.AppErrorByError(useCase.taskRepository.DeleteTask(id))
@@ -132,7 +132,7 @@ func (useCase *TaskUseCase) getAssignersIds(taskId int) []int {
 	return empty
 }
 
-func (useCase *TaskUseCase) CheckUserHaveTask(taskId, userId int) *app.AppError {
+func (useCase *TaskUseCase) CheckUserHaveTaskById(taskId, userId int) *app.AppError {
 	item, _ := useCase.taskRepository.GetTaskFromId(taskId)
 	projects, err := useCase.projectUseCase.GetAllProjects(userId)
 	if err != nil || item == nil {
@@ -142,6 +142,21 @@ func (useCase *TaskUseCase) CheckUserHaveTask(taskId, userId int) *app.AppError 
 	for _, project := range projects {
 		id = *project.Id
 		if id == item.ProjectId {
+			return nil
+		}
+	}
+	return app.NewError(http.StatusForbidden, app.ERR_Forbiden)
+}
+
+func (useCase *TaskUseCase) CheckUserHaveTask(task models.Task, userId int) *app.AppError {
+	projects, err := useCase.projectUseCase.GetAllProjects(userId)
+	if err != nil {
+		return err
+	}
+	var id int
+	for _, project := range projects {
+		id = *project.Id
+		if id == task.ProjectId {
 			return nil
 		}
 	}

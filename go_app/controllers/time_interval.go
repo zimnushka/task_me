@@ -17,7 +17,8 @@ type TimeIntervalController struct {
 
 func (controller TimeIntervalController) Init(router *gin.Engine) {
 	router.GET("/timeIntervals", controller.getIntervalsByUser)
-	router.GET("/timeIntervals/:id", controller.getIntervalsByTask)
+	router.GET("/timeIntervals/task/:id", controller.getIntervalsByTask)
+	router.GET("/timeIntervals/project/:id", controller.getIntervalsByProject)
 	router.POST("/timeIntervals/:id", controller.AddInterval)
 	router.PUT("/timeIntervals/:id", controller.FinishInterval)
 }
@@ -30,7 +31,7 @@ func (controller TimeIntervalController) Init(router *gin.Engine) {
 // @Produce		json
 // @Param			id	path		int		true	"Task id"
 // @Success		200		{object}	[]models.Interval
-// @Router			/timeIntervals/{id} [get]
+// @Router			/timeIntervals/task/{id} [get]
 func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
@@ -44,6 +45,35 @@ func (controller TimeIntervalController) getIntervalsByTask(c *gin.Context) {
 		return
 	}
 	items, err := controller.intervalUseCase.GetIntervalsByTask(id, *user.Id)
+	if err != nil {
+		err.Call(c)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+// @Summary		Get intervals by project ID
+// @Description	Get intervals by project ID
+// @ID				intervals-get-by-project-id
+// @Tags Intervals
+// @Accept			json
+// @Produce		json
+// @Param			id	path		int		true	"Project id"
+// @Success		200		{object}	[]models.Interval
+// @Router			/timeIntervals/project/{id} [get]
+func (controller TimeIntervalController) getIntervalsByProject(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		err.Call(c)
+		return
+	}
+	idString := c.Param("id")
+	id, strToIntErr := strconv.Atoi(idString)
+	if strToIntErr != nil {
+		app.AppErrorByError(strToIntErr).Call(c)
+		return
+	}
+	items, err := controller.intervalUseCase.GetIntervalsByProject(id, *user.Id)
 	if err != nil {
 		err.Call(c)
 		return

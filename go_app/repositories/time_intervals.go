@@ -94,6 +94,35 @@ func (intervalRepository IntervalRepository) GetByTaskId(id int) ([]models.Inter
 	return items, nil
 }
 
+func (intervalRepository IntervalRepository) GetByProjectId(id int) ([]models.Interval, error) {
+	db, err := intervalRepository.taskMeDB.GetDB()
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("SELECT intervals.id, intervals.task_id, intervals.time_start, intervals.time_end, intervals.user_id, intervals.description, users.name, users.email, users.color FROM intervals INNER JOIN users ON intervals.user_id = users.id INNER JOIN tasks ON intervals.task_id = tasks.id INNER JOIN projects ON tasks.project_id = projects.id AND projects.id = '%d'", id)
+	results, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer results.Close()
+
+	itemsLng := 0
+	items := make([]models.Interval, itemsLng)
+
+	for results.Next() {
+		var item models.Interval
+		err := results.Scan(&item.Id, &item.TaskId, &item.TimeStart, &item.TimeEnd, &item.User.Id, &item.Description, &item.User.Name, &item.User.Email, &item.User.Color)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+		itemsLng++
+	}
+
+	return items, nil
+}
+
 func (intervalRepository IntervalRepository) GetByUserId(id int) ([]models.Interval, error) {
 	db, err := intervalRepository.taskMeDB.GetDB()
 	defer db.Close()

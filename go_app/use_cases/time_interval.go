@@ -13,7 +13,8 @@ type TimeIntervalUseCase struct {
 	intervalRepository repositories.IntervalRepository
 	userRepository     repositories.UserRepository
 
-	taskUseCase TaskUseCase
+	taskUseCase    TaskUseCase
+	projectUseCase ProjectUseCase
 }
 
 func (useCase *TimeIntervalUseCase) AddInterval(taskId, userId int) (*models.Interval, *app.AppError) {
@@ -57,6 +58,17 @@ func (useCase *TimeIntervalUseCase) GetIntervalsByTask(id, userId int) ([]models
 		return nil, err
 	}
 	data, err := useCase.intervalRepository.GetByTaskId(id)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	return data, nil
+}
+
+func (useCase *TimeIntervalUseCase) GetIntervalsByProject(id, userId int) ([]models.Interval, *app.AppError) {
+	if err := useCase.projectUseCase.CheckUserHaveProject(id, userId); err != nil {
+		return nil, err
+	}
+	data, err := useCase.intervalRepository.GetByProjectId(id)
 	if err != nil {
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}

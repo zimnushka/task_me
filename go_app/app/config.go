@@ -27,7 +27,7 @@ var DebugConfig = AppConfig{
 	DBParams: DBConectionParams{
 		User:     "root",
 		Password: "43WYOH5l8W1I",
-		Url:      "mariadb:3306",
+		Url:      "localhost:3306",
 		Db:       "taskMe",
 	}}
 
@@ -36,6 +36,6 @@ var ReleaseConfig = AppConfig{
 	DBParams: DBConectionParams{
 		User:     "root",
 		Password: "43WYOH5l8W1I",
-		Url:      "localhost:3306",
+		Url:      "mariadb:3306",
 		Db:       "taskMe",
 	}}

@@ -48,7 +48,11 @@ func (useCase *UserUseCase) AddUser(user models.User) (*models.User, *app_errors
 	}
 	return data, nil
 }
-func (useCase *UserUseCase) UpdateUser(user models.User) (*models.User, *app_errors.AppError) {
+func (useCase *UserUseCase) UpdateUser(user models.User, userId int) (*models.User, *app_errors.AppError) {
+	appErr := useCase.CheckUserHaveAcces(*user.Id, userId)
+	if appErr != nil {
+		return nil, appErr
+	}
 	if user.Password == "" {
 		userWithPass, _ := useCase.userRepository.GetUserFromId(*user.Id)
 		user.Password = userWithPass.Password
@@ -64,6 +68,17 @@ func (useCase *UserUseCase) UpdateUser(user models.User) (*models.User, *app_err
 	}
 	return data, nil
 }
-func (useCase *UserUseCase) DeleteUser(id int) *app_errors.AppError {
+func (useCase *UserUseCase) DeleteUser(id, userId int) *app_errors.AppError {
+	err := useCase.CheckUserHaveAcces(id, userId)
+	if err != nil {
+		return err
+	}
 	return app_errors.FromError(useCase.userRepository.DeleteUser(id))
+}
+
+func (useCase *UserUseCase) CheckUserHaveAcces(userEditedId, userId int) *app_errors.AppError {
+	if userEditedId == userId {
+		return nil
+	}
+	return app_errors.New(http.StatusForbidden, app_errors.ERR_Forbiden)
 }

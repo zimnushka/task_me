@@ -68,7 +68,7 @@ func (controller UserController) getUsers(c *gin.Context) {
 }
 
 func (controller UserController) addUser(c *gin.Context) {
-	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
 		err.Call(c)
 		return
@@ -88,7 +88,7 @@ func (controller UserController) addUser(c *gin.Context) {
 }
 
 func (controller UserController) editUser(c *gin.Context) {
-	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
 		err.Call(c)
 		return
@@ -98,7 +98,7 @@ func (controller UserController) editUser(c *gin.Context) {
 		app_errors.FromError(err).Call(c)
 		return
 	}
-	if _, err := controller.userUseCase.UpdateUser(item); err != nil {
+	if _, err := controller.userUseCase.UpdateUser(item, *user.Id); err != nil {
 		err.Call(c)
 		return
 	}
@@ -107,7 +107,7 @@ func (controller UserController) editUser(c *gin.Context) {
 }
 
 func (controller UserController) deleteUser(c *gin.Context) {
-	_, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth)) // TODO add check permission for this
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
 	if err != nil {
 		err.Call(c)
 		return
@@ -118,7 +118,7 @@ func (controller UserController) deleteUser(c *gin.Context) {
 		app_errors.FromError(strToIntErr).Call(c)
 		return
 	}
-	if err = controller.userUseCase.DeleteUser(id); err != nil {
+	if err = controller.userUseCase.DeleteUser(id, *user.Id); err != nil {
 		err.Call(c)
 		return
 	}

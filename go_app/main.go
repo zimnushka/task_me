@@ -39,6 +39,10 @@ func main() {
 	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
+	//TODO (OPTIMIZATION): taskDTO to task controller
+	//TODO (OPTIMIZATION): get all page info from one request
+	//TODO (FIX): get all user permission fix
+
 	controllers.AuthController{}.Init(router)
 	controllers.UserController{}.Init(router)
 	controllers.ProjectController{}.Init(router)

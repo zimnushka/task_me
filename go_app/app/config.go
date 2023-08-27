@@ -36,6 +36,6 @@ var ReleaseConfig = AppConfig{
 	DBParams: DBConectionParams{
 		User:     "root",
 		Password: "43WYOH5l8W1I",
-		Url:      "mariadb:3306",
+		Url:      "task_me_maria_db:3306",
 		Db:       "taskMe",
 	}}

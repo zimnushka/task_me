@@ -5,18 +5,14 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/zimnushka/task_me_go/go_app/app"
 )
 
 type TaskMeDB struct {
 }
 
 func (TaskMeDB) GetDB() (*sql.DB, error) {
-	const user = "root"
-	const password = "43WYOH5l8W1I"
-	const url = "mariadb:3306"
-	const db = "taskMe"
+	config := app.GetConfig()
 
-	const debugUrl = "localhost:3306"
-
-	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", user, password, debugUrl, db))
+	return sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", config.DBParams.User, config.DBParams.Password, config.DBParams.Url, config.DBParams.Db))
 }

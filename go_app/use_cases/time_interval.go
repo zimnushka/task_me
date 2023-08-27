@@ -1,87 +1,104 @@
 package usecases
 
 import (
-	"errors"
+	"net/http"
 	"time"
 
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
 
 type TimeIntervalUseCase struct {
 	intervalRepository repositories.IntervalRepository
+	taskRepository     repositories.TaskRepository
 
-	taskUseCase TaskUseCase
+	taskUseCase    TaskUseCase
+	projectUseCase ProjectUseCase
 }
 
-func (useCase *TimeIntervalUseCase) AddInterval(taskId, userId int) (*models.Interval, error) {
-	access, err := useCase.taskUseCase.CheckUserHaveTask(taskId, userId)
+func (useCase *TimeIntervalUseCase) AddInterval(taskId int, user models.User) (*models.Interval, *app.AppError) {
+	taskData, err := useCase.taskRepository.GetTaskFromId(taskId)
 	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	task := *taskData
+
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(taskId, *user.Id); err != nil {
 		return nil, err
 	}
-	if access {
-		var item models.Interval
-		item.TaskId = taskId
-		item.UserId = userId
-		item.TimeStart = time.Now().Format(time.RFC3339)
-		return useCase.intervalRepository.Add(item)
+
+	var item models.Interval
+	item.Task = task.ToDTO()
+	item.User = user.ToDTO()
+	item.TimeStart = time.Now().Format(time.RFC3339)
+	data, err := useCase.intervalRepository.Add(item)
+	if err != nil {
+		return nil, app.AppErrorByError(err)
 	}
-	return nil, errors.New("Forbiden")
+	return data, nil
+
 }
 
-func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Interval, error) {
+func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Interval, *app.AppError) {
 	interval, err := useCase.intervalRepository.GetById(id)
 	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(*interval.Task.Id, userId); err != nil {
 		return nil, err
 	}
-	access, err := useCase.taskUseCase.CheckUserHaveTask(interval.TaskId, userId)
-	if err != nil {
+
+	return interval, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+}
+
+func (useCase *TimeIntervalUseCase) GetIntervalsByTask(id, userId int) ([]models.Interval, *app.AppError) {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		return interval, err
+	data, err := useCase.intervalRepository.GetByTaskId(id)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
-	return nil, errors.New("Forbiden")
+	return data, nil
 }
 
-func (useCase *TimeIntervalUseCase) GetIntervalsByTask(id, userId int) ([]models.Interval, error) {
-	access, err := useCase.taskUseCase.CheckUserHaveTask(id, userId)
-	if err != nil {
+func (useCase *TimeIntervalUseCase) GetIntervalsByProject(id, userId int) ([]models.Interval, *app.AppError) {
+	if err := useCase.projectUseCase.CheckUserHaveProject(id, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		return useCase.intervalRepository.GetByTaskId(id)
-	}
-	return nil, errors.New("Forbiden")
-}
-
-func (useCase *TimeIntervalUseCase) GetIntervalsByUser(userId int) ([]models.Interval, error) {
-	return useCase.intervalRepository.GetByUserId(userId)
-}
-
-func (useCase *TimeIntervalUseCase) UpdateInterval(item models.Interval, userId int) error {
-	access, err := useCase.taskUseCase.CheckUserHaveTask(item.TaskId, userId)
+	data, err := useCase.intervalRepository.GetByProjectId(id)
 	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	return data, nil
+}
+
+func (useCase *TimeIntervalUseCase) GetIntervalsByUser(userId int) ([]models.Interval, *app.AppError) {
+	data, err := useCase.intervalRepository.GetByUserId(userId)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	return data, nil
+}
+
+func (useCase *TimeIntervalUseCase) UpdateInterval(item models.Interval, userId int) *app.AppError {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(*item.Task.Id, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.intervalRepository.Update(item)
-	}
-	return errors.New("Forbiden")
+	return app.AppErrorByError(useCase.intervalRepository.Update(item))
 }
 
-func (useCase *TimeIntervalUseCase) FinishInterval(taskId, userId int) error {
-	access, err := useCase.taskUseCase.CheckUserHaveTask(taskId, userId)
-	if err != nil {
+func (useCase *TimeIntervalUseCase) FinishInterval(taskId, userId int) *app.AppError {
+	if err := useCase.taskUseCase.CheckUserHaveTaskById(taskId, userId); err != nil {
 		return err
-	}
-	if access {
+	} else {
 		item, err := useCase.intervalRepository.GetNotEndedInterval(taskId, userId)
 		if err != nil {
-			return err
+			return app.NewError(http.StatusNotFound, app.ERR_Not_found)
 		}
 		item.TimeEnd = time.Now().Format(time.RFC3339)
-		return useCase.intervalRepository.Update(*item)
+		return app.AppErrorByError(useCase.intervalRepository.Update(*item))
 	}
-	return errors.New("Forbiden")
+
 }

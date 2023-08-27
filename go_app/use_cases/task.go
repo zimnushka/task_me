@@ -1,9 +1,10 @@
 package usecases
 
 import (
-	"errors"
+	"net/http"
 	"time"
 
+	"github.com/zimnushka/task_me_go/go_app/app"
 	"github.com/zimnushka/task_me_go/go_app/models"
 	"github.com/zimnushka/task_me_go/go_app/repositories"
 )
@@ -15,98 +16,95 @@ type TaskUseCase struct {
 	projectUseCase ProjectUseCase
 }
 
-func (useCase *TaskUseCase) GetMembers(id, userId int) ([]models.User, error) {
-	access, err := useCase.CheckUserHaveTask(id, userId)
-	if err != nil {
+func (useCase *TaskUseCase) GetMembers(id, userId int) ([]models.User, *app.AppError) {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		return useCase.taskUserRepository.GetUsersByTask(id)
+	data, err := useCase.taskUserRepository.GetUsersByTask(id)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
-	return nil, errors.New("Forbiden")
+	return data, nil
 }
 
-func (useCase *TaskUseCase) UpdateMembersList(id int, users []models.User, userId int) error {
-	access, err := useCase.CheckUserHaveTask(id, userId)
-	if err != nil {
+func (useCase *TaskUseCase) UpdateMembersList(id int, users []models.User, userId int) *app.AppError {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return err
 	}
-	if access {
-		useCase.taskUserRepository.DeleteAllLinkByTask(id)
-		for _, user := range users {
-			err = useCase.taskUserRepository.AddLink(id, *user.Id)
-			if err != nil {
-				return err
-			}
-		}
 
+	useCase.taskUserRepository.DeleteAllLinkByTask(id)
+	for _, user := range users {
+		if err := useCase.taskUserRepository.AddLink(id, *user.Id); err != nil {
+			return app.AppErrorByError(err)
+		}
 	}
-	return errors.New("Forbiden")
+	return nil
 }
 
-func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, error) {
+func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, *app.AppError) {
 	task, err := useCase.taskRepository.GetTaskFromId(id)
 	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+
+	if err := useCase.projectUseCase.CheckUserHaveProject(task.ProjectId, userId); err != nil {
 		return nil, err
 	}
 
-	access, err := useCase.projectUseCase.CheckUserHaveProject(task.ProjectId, userId)
-	if err != nil {
-		return nil, err
-	}
-	if access {
-		task.Assigners = useCase.getAssignersIds(*task.Id)
-		return task, err
-	}
-	return nil, errors.New("Forbiden")
+	task.Assigners = useCase.getAssignersIds(*task.Id)
+	return task, nil
+
 }
 
-func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, error) {
-	access, err := useCase.projectUseCase.CheckUserHaveProject(projectId, userId)
-	if err != nil {
+func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, *app.AppError) {
+	if err := useCase.projectUseCase.CheckUserHaveProject(projectId, userId); err != nil {
 		return nil, err
 	}
-	if access {
-		tasks, err := useCase.taskRepository.GetTasksFromProject(projectId)
-		return useCase.addAssignersIdsToTaskList(tasks), err
+	tasks, err := useCase.taskRepository.GetTasksFromProject(projectId)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
-	return nil, errors.New("Forbiden")
+	return useCase.addAssignersIdsToTaskList(tasks), nil
+
 }
 
-func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, error) {
+func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, *app.AppError) {
 	tasks, err := useCase.taskUserRepository.GetTasksByUser(userId)
-	return useCase.addAssignersIdsToTaskList(tasks), err
+	data, err := useCase.addAssignersIdsToTaskList(tasks), err
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	return data, nil
+
 }
 
-func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task, error) {
+func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task, *app.AppError) {
 	if task.Title == "" {
-		return nil, errors.New("Title is empty")
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Empty_field)
 	}
 	task.Id = nil
 	task.StartDate = time.Now().Format(time.RFC3339)
-	return useCase.taskRepository.AddTask(task)
+	data, err := useCase.taskRepository.AddTask(task)
+	if err != nil {
+		return nil, app.AppErrorByError(err)
+	}
+	return data, nil
 }
 
-func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) error {
-	access, err := useCase.CheckUserHaveTask(*item.Id, userId)
-	if err != nil {
+func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) *app.AppError {
+	if err := useCase.CheckUserHaveTaskById(*item.Id, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.taskRepository.UpdateTask(item)
-	}
-	return errors.New("Forbiden")
+	return app.AppErrorByError(useCase.taskRepository.UpdateTask(item))
+
 }
 
-func (useCase *TaskUseCase) DeleteTask(id, userId int) error {
-	access, err := useCase.CheckUserHaveTask(id, userId)
-	if err != nil {
+func (useCase *TaskUseCase) DeleteTask(id, userId int) *app.AppError {
+	if err := useCase.CheckUserHaveTaskById(id, userId); err != nil {
 		return err
 	}
-	if access {
-		return useCase.taskRepository.DeleteTask(id)
-	}
-	return errors.New("Forbiden")
+	return app.AppErrorByError(useCase.taskRepository.DeleteTask(id))
+
 }
 
 func (useCase *TaskUseCase) addAssignersIdsToTaskList(tasks []models.Task) []models.Task {
@@ -134,18 +132,33 @@ func (useCase *TaskUseCase) getAssignersIds(taskId int) []int {
 	return empty
 }
 
-func (useCase *TaskUseCase) CheckUserHaveTask(taskId, userId int) (bool, error) {
-	item, err := useCase.taskRepository.GetTaskFromId(taskId)
+func (useCase *TaskUseCase) CheckUserHaveTaskById(taskId, userId int) *app.AppError {
+	item, _ := useCase.taskRepository.GetTaskFromId(taskId)
 	projects, err := useCase.projectUseCase.GetAllProjects(userId)
 	if err != nil || item == nil {
-		return false, err
+		return err
 	}
 	var id int
 	for _, project := range projects {
 		id = *project.Id
-		if id == *&item.ProjectId {
-			return true, nil
+		if id == item.ProjectId {
+			return nil
 		}
 	}
-	return false, nil
+	return app.NewError(http.StatusForbidden, app.ERR_Forbiden)
+}
+
+func (useCase *TaskUseCase) CheckUserHaveTask(task models.Task, userId int) *app.AppError {
+	projects, err := useCase.projectUseCase.GetAllProjects(userId)
+	if err != nil {
+		return err
+	}
+	var id int
+	for _, project := range projects {
+		id = *project.Id
+		if id == task.ProjectId {
+			return nil
+		}
+	}
+	return app.NewError(http.StatusForbidden, app.ERR_Forbiden)
 }

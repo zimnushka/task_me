@@ -10,6 +10,10 @@ import (
 	usecases "github.com/zimnushka/task_me_go/go_app/use_cases"
 )
 
+type descriptionModel struct {
+	Description string `json:"description"`
+}
+
 type TimeIntervalController struct {
 	authUseCase     usecases.AuthUseCase
 	intervalUseCase usecases.TimeIntervalUseCase
@@ -20,7 +24,7 @@ func (controller TimeIntervalController) Init(router *gin.Engine) {
 	router.GET("/timeIntervals/task/:id", controller.getIntervalsByTask)
 	router.GET("/timeIntervals/project/:id", controller.getIntervalsByProject)
 	router.POST("/timeIntervals/:id", controller.AddInterval)
-	router.PUT("/timeIntervals/:id", controller.FinishInterval)
+	router.PUT("/timeIntervals", controller.FinishInterval)
 }
 
 // @Summary		Get intervals by task ID
@@ -148,14 +152,13 @@ func (controller TimeIntervalController) FinishInterval(c *gin.Context) {
 		err.Call(c)
 		return
 	}
-	idString := c.Param("id")
-	id, strToIntErr := strconv.Atoi(idString)
-	if strToIntErr != nil {
-		app.AppErrorByError(strToIntErr).Call(c)
-		return
+
+	var item descriptionModel
+	if err := c.BindJSON(&item); err != nil {
+		item.Description = ""
 	}
 
-	if err := controller.intervalUseCase.FinishInterval(id, *user.Id); err != nil {
+	if err := controller.intervalUseCase.FinishInterval(*user.Id, item.Description); err != nil {
 		err.Call(c)
 		return
 	}

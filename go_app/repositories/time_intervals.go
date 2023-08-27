@@ -39,13 +39,13 @@ func (intervalRepository IntervalRepository) GetById(id int) (*models.Interval, 
 	return nil, errors.New(app.ERR_Unexpected_repository_error)
 }
 
-func (intervalRepository IntervalRepository) GetNotEndedInterval(taskId, userId int) (*models.Interval, error) {
+func (intervalRepository IntervalRepository) GetNotEndedInterval(userId int) (*models.Interval, error) {
 	db, err := intervalRepository.taskMeDB.GetDB()
 	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("SELECT intervals.id, intervals.time_start, intervals.time_end, intervals.user_id, intervals.description, users.name, users.email, users.color, tasks.id, tasks.project_id, tasks.title, tasks.status_id, tasks.start_date, tasks.stop_date, tasks.cost FROM intervals INNER JOIN users ON intervals.user_id = users.id INNER JOIN tasks ON intervals.task_id = tasks.id AND intervals.user_id = '%d' AND intervals.task_id = '%d' AND intervals.time_end = ''", userId, taskId)
+	query := fmt.Sprintf("SELECT intervals.id, intervals.time_start, intervals.time_end, intervals.user_id, intervals.description, users.name, users.email, users.color, tasks.id, tasks.project_id, tasks.title, tasks.status_id, tasks.start_date, tasks.stop_date, tasks.cost FROM intervals INNER JOIN users ON intervals.user_id = users.id INNER JOIN tasks ON intervals.task_id = tasks.id AND intervals.user_id = '%d' AND intervals.time_end = ''", userId)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err

@@ -31,7 +31,7 @@ import (
 // @Router / [get]
 
 func main() {
-	app.SetConfig(app.ReleaseConfig)
+	app.SetConfig(app.DebugConfig)
 
 	router := gin.Default()
 	router.Use(CORSMiddleware())

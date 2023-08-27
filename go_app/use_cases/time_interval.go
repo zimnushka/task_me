@@ -18,6 +18,10 @@ type TimeIntervalUseCase struct {
 }
 
 func (useCase *TimeIntervalUseCase) AddInterval(taskId int, user models.User) (*models.Interval, *app.AppError) {
+	notEndedInterval, _ := useCase.intervalRepository.GetNotEndedInterval(*user.Id)
+	if notEndedInterval != nil {
+		return nil, app.NewError(http.StatusInternalServerError, app.ERR_TimeInterval_Already_Started)
+	}
 	taskData, err := useCase.taskRepository.GetTaskFromId(taskId)
 	if err != nil {
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
@@ -37,7 +41,6 @@ func (useCase *TimeIntervalUseCase) AddInterval(taskId int, user models.User) (*
 		return nil, app.AppErrorByError(err)
 	}
 	return data, nil
-
 }
 
 func (useCase *TimeIntervalUseCase) GetIntervalById(id, userId int) (*models.Interval, *app.AppError) {
@@ -89,16 +92,12 @@ func (useCase *TimeIntervalUseCase) UpdateInterval(item models.Interval, userId 
 	return app.AppErrorByError(useCase.intervalRepository.Update(item))
 }
 
-func (useCase *TimeIntervalUseCase) FinishInterval(taskId, userId int) *app.AppError {
-	if err := useCase.taskUseCase.CheckUserHaveTaskById(taskId, userId); err != nil {
-		return err
-	} else {
-		item, err := useCase.intervalRepository.GetNotEndedInterval(taskId, userId)
-		if err != nil {
-			return app.NewError(http.StatusNotFound, app.ERR_Not_found)
-		}
-		item.TimeEnd = time.Now().Format(time.RFC3339)
-		return app.AppErrorByError(useCase.intervalRepository.Update(*item))
+func (useCase *TimeIntervalUseCase) FinishInterval(userId int, desc string) *app.AppError {
+	item, err := useCase.intervalRepository.GetNotEndedInterval(userId)
+	if err != nil {
+		return app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
-
+	item.TimeEnd = time.Now().Format(time.RFC3339)
+	item.Description = desc
+	return app.AppErrorByError(useCase.intervalRepository.Update(*item))
 }

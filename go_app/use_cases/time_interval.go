@@ -33,8 +33,8 @@ func (useCase *TimeIntervalUseCase) AddInterval(taskId int, user models.User) (*
 	}
 
 	var item models.Interval
-	item.Task = task.ToDTO()
-	item.User = user.ToDTO()
+	item.Task = task
+	item.User = user
 	item.TimeStart = time.Now().Format(time.RFC3339)
 	data, err := useCase.intervalRepository.Add(item)
 	if err != nil {
@@ -83,6 +83,22 @@ func (useCase *TimeIntervalUseCase) GetIntervalsByUser(userId int) ([]models.Int
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
 	return data, nil
+}
+
+func (useCase *TimeIntervalUseCase) GetNotClosedIntervalsByUser(userId int) (*models.Interval, *app.AppError) {
+	data, err := useCase.intervalRepository.GetByUserId(userId)
+	if err != nil {
+		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
+	}
+	var notClosedInterval *models.Interval
+	notClosedInterval = nil
+	for _, interval := range data {
+		if interval.TimeEnd == "" {
+			notClosedInterval = &interval
+			break
+		}
+	}
+	return notClosedInterval, nil
 }
 
 func (useCase *TimeIntervalUseCase) UpdateInterval(item models.Interval, userId int) *app.AppError {

@@ -21,6 +21,7 @@ type TimeIntervalController struct {
 
 func (controller TimeIntervalController) Init(router *gin.Engine) {
 	router.GET("/timeIntervals", controller.getIntervalsByUser)
+	router.GET("/timeIntervals/open", controller.getNotClosedIntervals)
 	router.GET("/timeIntervals/task/:id", controller.getIntervalsByTask)
 	router.GET("/timeIntervals/project/:id", controller.getIntervalsByProject)
 	router.POST("/timeIntervals/:id", controller.AddInterval)
@@ -101,6 +102,21 @@ func (controller TimeIntervalController) getIntervalsByUser(c *gin.Context) {
 	}
 
 	items, err := controller.intervalUseCase.GetIntervalsByUser(*user.Id)
+	if err != nil {
+		err.Call(c)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, items)
+}
+
+func (controller TimeIntervalController) getNotClosedIntervals(c *gin.Context) {
+	user, err := controller.authUseCase.CheckToken(c.GetHeader(models.HeaderAuth))
+	if err != nil {
+		err.Call(c)
+		return
+	}
+
+	items, err := controller.intervalUseCase.GetNotClosedIntervalsByUser(*user.Id)
 	if err != nil {
 		err.Call(c)
 		return

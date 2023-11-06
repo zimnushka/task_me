@@ -154,33 +154,33 @@ func (intervalRepository IntervalRepository) GetByUserId(id int) ([]models.Inter
 
 func (intervalRepository IntervalRepository) Add(item models.Interval) (*models.Interval, error) {
 	db, err := intervalRepository.taskMeDB.GetDB()
-	defer db.Close()
 	if err != nil {
+		defer db.Close()
 		return nil, err
 	}
-
-	query := fmt.Sprintf("INSERT INTO intervals (task_id, user_id, time_start, time_end, description) VALUES ('%d','%d','%s','%s','%s') RETURNING id", *item.Task.Id, item.User.Id, item.TimeStart, item.TimeEnd, item.Description)
+	defer db.Close()
+	query := "INSERT INTO intervals (task_id, user_id, time_start, time_end, description) VALUES (95,1,'2023-11-06T22:49:54+03:00','','') RETURNING id"
+	// query := fmt.Sprintf("INSERT INTO intervals (task_id, user_id, time_start, time_end, description) VALUES (%d,%d,'%s','%s','%s') RETURNING id", *item.Task.Id, item.User.Id, item.TimeStart, item.TimeEnd, item.Description)
 	results, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
-	defer results.Close()
 
 	for results.Next() {
 		err = results.Scan(&item.Id)
 	}
+	defer results.Close()
 	return &item, err
 }
 
 func (intervalRepository IntervalRepository) Update(item models.Interval) error {
 	db, err := intervalRepository.taskMeDB.GetDB()
-	defer db.Close()
 	if err != nil {
+		defer db.Close()
 		return err
 	}
-	var id int
-	id = *item.Id
-	query := fmt.Sprintf("UPDATE intervals SET task_id = '%d', user_id = '%d', time_start = '%s', time_end = '%s', description = '%s' WHERE id = %d", *item.Task.Id, item.User.Id, item.TimeStart, item.TimeEnd, item.Description, id)
+	defer db.Close()
+	query := fmt.Sprintf("UPDATE intervals SET task_id = %d, user_id = %d, time_start = '%s', time_end = '%s', description = '%s' WHERE id = %d", *item.Task.Id, *item.User.Id, item.TimeStart, item.TimeEnd, item.Description, *item.Id)
 	results, err := db.Query(query)
 	if err == nil {
 		defer results.Close()

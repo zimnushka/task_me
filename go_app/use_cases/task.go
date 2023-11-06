@@ -53,7 +53,6 @@ func (useCase *TaskUseCase) GetTaskById(id, userId int) (*models.Task, *app.AppE
 
 	task.Assigners = useCase.getAssignersIds(*task.Id)
 	return task, nil
-
 }
 
 func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.Task, *app.AppError) {
@@ -65,7 +64,6 @@ func (useCase *TaskUseCase) GetTaskByProjectId(projectId, userId int) ([]models.
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
 	return useCase.addAssignersIdsToTaskList(tasks), nil
-
 }
 
 func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, *app.AppError) {
@@ -75,7 +73,6 @@ func (useCase *TaskUseCase) GetAllTasks(userId int) ([]models.Task, *app.AppErro
 		return nil, app.NewError(http.StatusNotFound, app.ERR_Not_found)
 	}
 	return data, nil
-
 }
 
 func (useCase *TaskUseCase) AddTask(task models.Task, userId int) (*models.Task, *app.AppError) {
@@ -95,8 +92,26 @@ func (useCase *TaskUseCase) UpdateTask(item models.Task, userId int) *app.AppErr
 	if err := useCase.CheckUserHaveTaskById(*item.Id, userId); err != nil {
 		return err
 	}
-	return app.AppErrorByError(useCase.taskRepository.UpdateTask(item))
+	if item.Status == models.StatusClose {
+		var timeIntevalUseCase TimeIntervalUseCase
+		intervals, err := timeIntevalUseCase.GetIntervalsByTask(*item.Id, userId)
+		if err != nil {
+			return err
+		}
+		var hasNotEndedInterval bool
+		for _, interval := range intervals {
+			if interval.TimeEnd == "" {
+				hasNotEndedInterval = true
+				break
+			}
+		}
+		if hasNotEndedInterval {
+			return app.NewError(http.StatusConflict, app.ERR_time_interval_not_closed)
+		}
 
+	}
+
+	return app.AppErrorByError(useCase.taskRepository.UpdateTask(item))
 }
 
 func (useCase *TaskUseCase) DeleteTask(id, userId int) *app.AppError {
@@ -111,10 +126,8 @@ func (useCase *TaskUseCase) addAssignersIdsToTaskList(tasks []models.Task) []mod
 	var newList []models.Task
 	for _, task := range tasks {
 		usersIds := useCase.getAssignersIds(*task.Id)
-		task.Description = ""
 		task.Assigners = usersIds
 		newList = append(newList, task)
-
 	}
 	return newList
 }
